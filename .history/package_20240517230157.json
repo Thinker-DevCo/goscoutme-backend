@@ -1,0 +1,41 @@
+{
+  "name": "thinker-node-app",
+  "version": "1.0.2",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "ts-node-dev --transpile-only --respawn --ignore-watch node_modules src/server.ts",
+    "generate": "bash ./bin/generate-entity.sh $1",
+    "context": "bash +x ./bin/get_code_context.sh && ./bin/get_code_context.sh",
+    "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
+    "generate-swagger": "ts-node ./src/swagger.ts"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.12.1",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/express": "^4.17.21",
+    "@types/jsonwebtoken": "^9.0.6",
+    "@types/socket.io": "^3.0.2",
+    "bcryptjs": "^2.4.3",
+    "class-validator": "^0.14.1",
+    "class-validator-jsonschema": "^5.0.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "express-async-errors": "^3.1.1",
+    "inquirer": "^9.2.20",
+    "jsonwebtoken": "^9.0.2",
+    "reflect-metadata": "^0.2.2",
+    "swagger-ui-dist": "^5.17.10",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.4.4",
+    "uid": "^2.0.2"
+  },
+  "devDependencies": {
+    "prisma": "^5.12.1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

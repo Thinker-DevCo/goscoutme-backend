@@ -1,0 +1,129 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          Int                @id @default(autoincrement())
+  public_id   String             @unique @default(uuid())
+  first_name  String
+  last_name   String
+  age         Int
+  email       String
+  password    String
+  sex         UserSexOptions     @default(NOT_SPECIEFIED)
+  birt_date   DateTime
+  nationality NationalityOptions @default(NOT_SPECIEFIED)
+  citzenship  NationalityOptions @default(NOT_SPECIEFIED)
+  sport_id    Int?
+  phone       String?
+  mobile      String?
+  address     String?
+  sport       Sports?            @relation(fields: [sport_id], references: [id], onDelete: SetNull)
+}
+
+model UserAthleteProfile {
+  id             Int                  @id @default(autoincrement())
+  birth_country  NationalityOptions   @default(NOT_SPECIEFIED)
+  citzenship     String
+  height         Float
+  height_metric  HeightOptions        @default(CM)
+  weight         Float
+  weight_metric  WeightOptions        @default(KG)
+  address        String
+  phone          String
+  mobile         String
+  status         AthleteStatusOptions @default(NOT_SPECIEFIED)
+  leagues_played String?
+  guardians      UserGuardian[]
+}
+
+model UserScoutProfile {
+  id      Int    @id @default(autoincrement())
+  address String
+  phone   String
+  mobile  String
+
+  organization UserOrganization
+}
+
+model UserGuardian {
+  id           Int                @id @default(autoincrement())
+  name         String
+  relationship String
+  profile_id   Int
+  profile      UserAthleteProfile @relation(fields: [profile_id], references: [id], onDelete: Cascade)
+  concent_form String
+}
+
+model Sports {
+  id        Int    @id @default(autoincrement())
+  public_id String @unique @default(uuid())
+  name      String
+  user      User[]
+}
+
+model UserOrganization {
+  id           Int              @id @default(autoincrement())
+  public_id    String           @unique @default(uuid())
+  name         String
+  email        String
+  phone        String?
+  mobile       String?
+  document_url String
+  profile_id   Int              @unique
+  profile      UserScoutProfile @relation(fields: [profile_id], references: [id], onDelete: Cascade)
+}
+
+model UserMedia {
+  id        Int          @id @default(autoincrement())
+  public_id String       @unique @default(uuid())
+  name      String
+  type      MediaOptions
+  media_url String
+}
+
+enum UserSexOptions {
+  NOT_SPECIEFIED
+  MALE
+  FEMALE
+}
+
+enum NationalityOptions {
+  NOT_SPECIEFIED
+  INDIAN
+  MOZAMBICAN
+  PORTUGUESE
+  ARGENTINIAN
+}
+
+enum MediaOptions {
+  VIDEO
+  IMAGE
+}
+
+enum HeightOptions {
+  CM
+  FT
+}
+
+enum WeightOptions {
+  KG
+  LB
+}
+
+enum AthleteStatusOptions {
+  NOT_SPECIEFIED
+  PROFESSIONAL
+  AMATEUR
+}

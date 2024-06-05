@@ -1,0 +1,5 @@
+export enum IUserSexOptions{
+  NOT_SPECIEFIED = NOT_SPECIEFIED,
+  MALE = MALE,
+  FEMALE = FEMALE
+}

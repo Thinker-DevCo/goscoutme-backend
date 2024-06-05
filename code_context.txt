@@ -1,0 +1,593 @@
+// File: src/decorators/controller.decorator.ts
+import { MetadataKeys } from "./metadata.keys";
+
+const Controller = (basePath: string, version?: string): ClassDecorator => {
+  return (target) => {
+      Reflect.defineMetadata(MetadataKeys.BASE_PATH, basePath, target);
+      if (version) {
+          Reflect.defineMetadata(MetadataKeys.VERSION, version, target);
+      }
+  };
+};
+
+export default Controller
+// File: src/decorators/decoratorfactory.ts
+import { Methods } from ".";
+import { MetadataKeys } from "./metadata.keys";
+import { Type } from "./service.decorator";
+import { IRouter } from "./types";
+
+
+export const methodDecoratorFactory = (method: Methods) => {
+  return (path: string, requestBodyDto?: any, responseBodyDto?: any): MethodDecorator => {
+    return (target, propertyKey) => {
+      const controllerClass = target.constructor;
+      const routers: IRouter[] =   Reflect.hasMetadata(MetadataKeys.ROUTERS, controllerClass) ?
+        Reflect.getMetadata(MetadataKeys.ROUTERS, controllerClass) : [];
+      routers.push({
+        method,
+        path,
+        handlerName: propertyKey,
+        requestBodyDto,
+        responseBodyDto,
+      });
+      Reflect.defineMetadata(MetadataKeys.ROUTERS, routers, controllerClass);
+    }
+  }
+}
+
+
+// File: src/decorators/index.ts
+import { methodDecoratorFactory } from "./decoratorfactory";
+
+import Controller from "./controller.decorator";
+import { GlobalRoutes } from "./module.decorator";
+import { Injectable} from "./service.decorator";
+export enum Methods {
+  GET = 'get',
+  POST = 'post',
+  PUT= 'put',
+  PATCH = "patch",
+  DELETE = "delete"
+}
+export {Controller, GlobalRoutes, Injectable};
+export const Get = methodDecoratorFactory(Methods.GET);
+export const Post = methodDecoratorFactory(Methods.POST);
+export const Put = methodDecoratorFactory(Methods.PUT);
+export const Patch = methodDecoratorFactory(Methods.PATCH);
+export const Delete = methodDecoratorFactory(Methods.DELETE);
+// File: src/decorators/metadata.keys.ts
+export enum MetadataKeys {
+  BASE_PATH = 'base_path',
+  ROUTERS = 'routers',
+  VERSION = "version"
+}
+// File: src/decorators/module.decorator.ts
+import { Express } from "express";
+import { MetadataKeys } from "./metadata.keys";
+import { IRouter } from "./types";
+
+
+
+export function Route(controllers: any[]): ClassDecorator {
+    return function (target: any) {
+        target.prototype.startModule = (app: Express) => {
+
+            setupRoutes(app, controllers);
+        };
+    };
+}
+
+export function GlobalRoutes(modules: any[]): ClassDecorator {
+  return function (target: any) {
+      // Define a startModule method on the target class
+      target.prototype.startModule = (app: Express) => {
+          // Initialize each provided module
+          modules.forEach(moduleClass => {
+              const moduleInstance = new moduleClass();
+              // Check if the module instance has a `startModule` method
+              if (typeof moduleInstance.startModule === 'function') {
+                  // Initialize the module, passing the Express app instance
+                  moduleInstance.startModule(app);
+              }
+          });
+      };
+  };
+}
+export function setupRoutes(app: Express, controllers: any[]) {
+  controllers.forEach(controllerClass => {
+
+      const basePath = Reflect.getMetadata(MetadataKeys.BASE_PATH, controllerClass) || '';
+      const version = Reflect.getMetadata(MetadataKeys.VERSION, controllerClass);
+
+
+      const processedBasePath = basePath.startsWith('/') ? basePath : `/${basePath}`;
+
+
+      let fullBasePath = processedBasePath;
+      if (version) {
+          fullBasePath = `/api/v${version}${processedBasePath}`;
+      }
+
+
+      const instance = new controllerClass();
+
+      const routers: IRouter[] = Reflect.getMetadata(MetadataKeys.ROUTERS, controllerClass) || [];
+
+
+      routers.forEach(({ method, path, handlerName }) => {
+
+          const processedPath = path.startsWith('/') ? path : `/${path}`;
+
+          const routePath = `${fullBasePath}${processedPath}`;
+
+          const handler = instance[handlerName].bind(instance);
+
+          app[method.toLowerCase()](routePath, handler);
+      });
+  });
+}
+// File: src/decorators/service.decorator.ts
+import { uid } from "uid";
+
+
+export interface Type<T = any> extends Function {
+  new (...args: any[]): T;
+}
+export enum Scope {
+  DEFAULT,
+  TRANSIENT,
+  REQUEST,
+}
+export interface ScopeOptions {
+  scope?: Scope;
+  durable?: boolean;
+}
+export type InjectableOptions = ScopeOptions;
+export const INJECTABLE_WATERMARK = '__injectable__';
+export const SCOPE_OPTIONS_METADATA = 'scope:options';
+export function Injectable(options?: InjectableOptions): ClassDecorator {
+  return (target: object) => {
+    Reflect.defineMetadata(INJECTABLE_WATERMARK, true, target);
+    Reflect.defineMetadata(SCOPE_OPTIONS_METADATA,options, target);
+  };
+}
+
+export function mixin<T>(mixinClass: Type<T>) {
+  Object.defineProperty(mixinClass, 'name', {
+    value: uid(21),
+  });
+  Injectable()(mixinClass);
+  return mixinClass;
+}
+// File: src/decorators/types.d.ts
+export interface IRouter {
+  method: Methods;
+  path: string;
+  handlerName: string | symbol;
+  requestBodyDto?: Type<any>;
+  responseBodyDto?: Type<any>;
+}
+// File: src/middlewares/errorHandlers.ts
+import { BaseError, HttpStatusCode } from "../providers/errorProvider";
+import { NextFunction, Request, Response } from "express";
+
+export function errorHandler(
+  err,
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  console.error(err);
+
+  if (err instanceof BaseError) {
+    res.status(err.httpCode).json({
+      error: err.name,
+      message: err.message,
+    });
+  } else {
+    res.status(HttpStatusCode.INTERNAL_SERVER).json({
+      error: "INTERNAL SERVER ERROR",
+      message: "An unexpected error occurred",
+    });
+  }
+}
+
+// Register the error handler as the last middleware
+// File: src/providers/errorProvider.ts
+export enum HttpStatusCode {
+  OK = 200,
+  BAD_REQUEST = 400,
+  NOT_FOUND = 404,
+  INTERNAL_SERVER = 500,
+  FORBIDDEN = 403,
+  UNAUTORIZED = 401,
+}
+
+export class BaseError extends Error {
+  public readonly name: string;
+  public readonly httpCode: HttpStatusCode;
+  public readonly isOperational: boolean;
+
+  constructor(
+    name: string,
+    httpCode: HttpStatusCode,
+    isOperational: boolean,
+    description: string
+  ) {
+    super(description);
+    Object.setPrototypeOf(this, new.target.prototype);
+
+    this.name = name;
+    this.httpCode = httpCode;
+    this.isOperational = isOperational;
+
+    Error.captureStackTrace(this);
+  }
+}
+
+export class APIError extends BaseError {
+  constructor(
+    name,
+    httpCode = HttpStatusCode.INTERNAL_SERVER,
+    isOperational = true,
+    description = "internal server error"
+  ) {
+    super(name, httpCode, isOperational, description);
+  }
+}
+
+class HTTP404Error extends BaseError {
+  constructor(description) {
+    super("NOT FOUND", HttpStatusCode.NOT_FOUND, true, description);
+  }
+}
+// File: src/route.ts
+import { Express } from "express";
+import { GlobalRoutes } from "./decorators";
+import { userRoutes } from "./useCases/user/user.route";
+
+@GlobalRoutes([userRoutes])
+export class AppGlobalRoutes {
+  startModule(app: Express): void {}
+}
+
+
+
+// File: src/server.ts
+import express, { NextFunction, Request, Response } from "express";
+
+import "express-async-errors";
+import * as dotenv from "dotenv";
+import 'reflect-metadata';
+import * as http from "http";
+import cors from "cors";
+import { AppGlobalRoutes } from "./route";
+
+
+
+
+
+dotenv.config();
+
+const app = express();
+
+const port = process.env.PORT || 3000;
+const appGlobalRoutesInstance = new AppGlobalRoutes();
+
+app.use(cors());
+appGlobalRoutesInstance.startModule(app);
+app.use(express.json());
+app.listen(port);
+
+
+
+
+export { app };
+// File: src/swagger.ts
+import * as fs from 'fs';
+import * as path from 'path';
+import { SwaggerObject } from 'swagger-ui-dist';
+import { MetadataKeys } from './decorators/metadata.keys';
+import { IRouter } from './decorators/types';
+import { validationMetadatasToSchemas } from 'class-validator-jsonschema';
+import { getFromContainer } from 'class-validator';
+
+import 'reflect-metadata';
+
+const swaggerInfo = {
+  openapi: '3.0.0',
+  info: {
+    title: 'Your API',
+    version: '1.0.0',
+    description: 'Your API description',
+  },
+  servers: [
+    {
+      url: 'http://localhost:8000',
+    },
+  ],
+};
+
+function extractMetadata() {
+  const metadata = [];
+
+  // Import your controller classes
+  const controllerClasses = [
+    // Import your controller classes here
+    require('./useCases/Files/files.controller').FilesController,
+    require('./useCases/prompts/prompts.controller').promptsController,
+    require('./useCases/user/user.controller').UserController,
+    require('./useCases/workflow/workflow.controller').WorkflowController,
+  ];
+
+  controllerClasses.forEach((controllerClass) => {
+    const basePath = Reflect.getMetadata(MetadataKeys.BASE_PATH, controllerClass) || '';
+    const version = Reflect.getMetadata(MetadataKeys.VERSION, controllerClass) || '';
+    const routers: IRouter[] = Reflect.getMetadata(MetadataKeys.ROUTERS, controllerClass) || [];
+
+    routers.forEach(({ method, path, handlerName,requestBodyDto,responseBodyDto  }) => {
+      const processedPath = path.startsWith('/') ? path : `/${path}`;
+      const routePath = version ? `/api/v${version}${basePath}${processedPath}` : `${basePath}${processedPath}`;
+
+      metadata.push({
+        method,
+        path: routePath,
+        handlerName,
+        requestBodyDto,
+        responseBodyDto,
+        controller: controllerClass.name,
+        // Add other relevant metadata here
+      });
+    });
+  });
+
+  return metadata;
+}
+function generateSwaggerDocs(metadata) {
+  const swaggerDoc: SwaggerObject = { ...swaggerInfo, paths: {} };
+
+  metadata.forEach((route) => {
+    const pathItem = {
+      [route.method.toLowerCase()]: {
+        summary: `${route.method} ${route.path}`,
+        description: `${route.controller}.${route.handlerName}`,
+        requestBody: route.requestBodyDto
+          ? {
+              description: 'Request body',
+              required: true,
+              content: {
+                'application/json': {
+                  schema: classValidatorToJSONSchema(route.requestBodyDto)
+                },
+              },
+            }
+          : {},
+        responses: {
+          '200': {
+            description: 'Successful response',
+            content: {
+              'application/json': {
+                schema: classValidatorToJSONSchema(route.responseBodyDto)
+              },
+            },
+          },
+        },
+      },
+    };
+    const modelName = route.controller.replace('Controller', '').toUpperCase();
+    swaggerDoc.paths[`${modelName}:${route.handlerName}`] = pathItem;
+  });
+
+  return swaggerDoc;
+}
+function generateSwaggerFile() {
+  const metadata = extractMetadata();
+  const swaggerDoc = generateSwaggerDocs(metadata);
+
+  const swaggerFilePath = path.join(__dirname, 'swagger.json');
+  fs.writeFileSync(swaggerFilePath, JSON.stringify(swaggerDoc, null, 2));
+  console.log(`Swagger documentation generated at ${swaggerFilePath}`);
+}
+
+function classValidatorToJSONSchema(classType: any) {
+  if(!classType) return null
+  const metadatas = getFromContainer(classType) || [];
+
+  // Convert class-validator decorators to JSON schema
+  const schemas = validationMetadatasToSchemas(metadatas);
+
+  // Get the schema for the class
+  const schema = schemas[classType.name];
+
+  return schema;
+}
+
+
+
+
+generateSwaggerFile();
+// File: src/useCases/user/dto/createUser.dto.ts
+import { IsEmail, IsNotEmpty, IsString } from 'class-validator';
+
+export class CreateUserDto {
+  @IsEmail()
+  @IsNotEmpty()
+  email: string;
+
+  @IsString()
+  @IsNotEmpty()
+  password: string;
+}
+// File: src/useCases/user/dto/index.ts
+import { CreateUserDto } from "./createUser.dto";
+import { UpdateUserDto } from "./updateUser.dto";
+
+export {CreateUserDto, UpdateUserDto}
+// File: src/useCases/user/dto/updateUser.dto.ts
+import { CreateUserDto } from "./createUser.dto";
+
+type CreateUserDtoPartial = Partial<CreateUserDto>
+export class UpdateUserDto implements CreateUserDtoPartial{
+}
+// File: src/useCases/user/user.controller.ts
+import { Controller, Post, Get, Put, Delete } from "../../decorators";
+import { Request, Response } from "express";
+
+@Controller('/user', '1')
+export class userController {
+  @Post("")
+  async handleCreateuser(request: Request, response: Response) {
+    // Handle creation of a new resource
+    return response.json({ message: "Create user" });
+  }
+
+  @Get("")
+  async handleReaduser(request: Request, response: Response) {
+    // Handle reading a resource
+    return response.json({ message: "Read user" });
+  }
+
+  @Put("/:id")
+  async handleUpdateuser(request: Request, response: Response) {
+    // Handle updating a resource by ID
+    return response.json({ message: "Update user" });
+  }
+
+  @Delete("/:id")
+  async handleDeleteuser(request: Request, response: Response) {
+    // Handle deleting a resource by ID
+    return response.json({ message: "Delete user" });
+  }
+}
+
+// File: src/useCases/user/user.route.ts
+import { Route } from "../../decorators/module.decorator";
+import { userController } from "./user.controller";
+
+@Route([userController])
+export class userRoutes {
+  
+}
+
+// File: src/useCases/user/user.service.ts
+class userUseCase {
+  async executeCreateuser() {
+    
+  }
+
+  async executeReaduser() {
+    // Implement the read use case logic here
+  }
+
+  async executeUpdateuser() {
+    // Implement the update use case logic here
+  }
+
+  async executeDeleteuser() {
+    // Implement the delete use case logic here
+  }
+}
+
+export { userUseCase };
+
+// File: prisma/schema.prisma
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              String            @id @default(uuid())
+  email           String            @unique
+  password        String
+  userPreferences UserPreferences[]
+  files           Files[]
+  prompts         Prompts[]
+  workflow        Workflows[]
+  analytics       Analytics?
+}
+
+model UserPreferences {
+  id     String @id @default(uuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  key    String
+  value  String
+}
+
+model WorkflowPreferences {
+  id         String    @id @default(uuid())
+  workflowId String    @unique
+  workflow   Workflows @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  key        String
+  value      String
+}
+
+model Files {
+  id       String   @id @default(uuid())
+  userId   String   @unique
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  url      String
+  fileName String
+  type     fileType
+}
+
+model Prompts {
+  id              String            @id @default(uuid())
+  userId          String
+  user            User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  prompt          String
+  processedPrompt ProcessedPrompts?
+}
+
+model Analytics {
+  id     String @id @default(uuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Workflows {
+  id                  String                @id @default(uuid())
+  userId              String                @unique
+  user                User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name                String
+  description         String
+  metadata            Json
+  workflowPreferences WorkflowPreferences[]
+  workflowLogs        WorkflowLogs[]
+  createdAt           DateTime              @default(now())
+  updatedAt           DateTime              @updatedAt
+}
+
+model ProcessedPrompts {
+  id              String  @id @default(uuid())
+  promptId        String  @unique
+  prompt          Prompts @relation(fields: [promptId], references: [id], onDelete: Cascade)
+  processedPrompt String
+}
+
+model WorkflowLogs {
+  id         String    @id @default(uuid())
+  timestamp  DateTime
+  workflowId String    @unique
+  workflow   Workflows @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  key        String
+  value      String
+}
+
+enum fileType {
+  PDF
+  DOCX
+}
+
