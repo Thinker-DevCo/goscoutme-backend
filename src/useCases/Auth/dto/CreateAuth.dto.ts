@@ -30,8 +30,6 @@ export class ICreateAuthDto {
   @IsDateString()
   date: Date;
 
-
-
   @IsOptional()
   @IsPhoneNumber()
   phone?: string

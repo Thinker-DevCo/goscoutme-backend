@@ -22,21 +22,7 @@ class AuthUseCase {
     })
     if(user.error) throw new BaseError('FORBIDDEN', HttpStatusCode.FORBIDDEN, true, 'User already exists')
 
-    // const new_user = await this.prisma.client.profiles.create({
-    //   data: {
-    //     first_name: dto.first_name,
-    //     last_name: dto.last_name,
-    //     email: user.data.user.email,
-    //     birt_date: dto.date,
-    //     sex: dto.sex,
-    //     address: dto.address ? dto.address : null,
-    //     mobile: dto.mobile ? dto.mobile : null,
-    //     phone: dto.phone ? dto.phone : null,
-    //     nationality: dto.nationality,
-    //     citzenship: dto.citzenship,
-    //     public_id: user.data.user.id,
-    //   }
-    // })
+
     delete user.data.user.user_metadata,
     delete user.data.user.identities
     return {

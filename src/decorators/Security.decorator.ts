@@ -7,8 +7,9 @@ export function Secure(): MethodDecorator {
         const originalMethod = target[propertyKey];
         target[propertyKey] = async function (req: Request, res: Response, next: NextFunction) {
             const accessToken = req.headers.authorization?.split(' ')[1];
-            const user= supabase.auth.getUser(accessToken);
-            if(!user) throw new BaseError('FORBIDDEN', HttpStatusCode.FORBIDDEN, false, 'User UnAuthenticated')
+            const user=await supabase.auth.getUser(accessToken);
+            
+            if(!user.data.user) throw new BaseError('FORBIDDEN', HttpStatusCode.FORBIDDEN, false, 'User UnAuthenticated')
             return originalMethod.apply(this, [req, res, next]);
         };
     };
