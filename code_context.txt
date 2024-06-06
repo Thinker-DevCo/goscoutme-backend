@@ -1,3 +1,293 @@
+// File: src/@types/auth/auth.d.ts
+interface SupabaseSignUpTypes {
+  data: Data;
+  error: null;
+}
+
+interface Data {
+  user: User;
+  session: Session;
+}
+
+interface Session {
+  access_token: string;
+  token_type: string;
+  expires_in: number;
+  expires_at: number;
+  refresh_token: string;
+  user: User;
+}
+
+interface User {
+  id: string;
+  aud: string;
+  role: string;
+  email: string;
+  email_confirmed_at: string;
+  phone: string;
+  last_sign_in_at: string;
+  app_metadata: Appmetadata;
+  user_metadata: Usermetadata;
+  identities: Identity[];
+  created_at: string;
+  updated_at: string;
+  is_anonymous: boolean;
+}
+
+interface Identity {
+  identity_id: string;
+  id: string;
+  user_id: string;
+  identity_data: Usermetadata;
+  provider: string;
+  last_sign_in_at: string;
+  created_at: string;
+  updated_at: string;
+  email: string;
+}
+
+interface Usermetadata {
+  email: string;
+  email_verified: boolean;
+  phone_verified: boolean;
+  sub: string;
+}
+
+interface Appmetadata {
+  provider: string;
+  providers: string[];
+}
+// File: src/@types/options.d.ts
+export enum IUserSexOptions{
+  NOT_SPECIEFIED = NOT_SPECIEFIED,
+  MALE = MALE,
+  FEMALE = FEMALE
+}
+
+// File: src/@types/user/user.d.ts
+export enum userSexOptions{
+  MALE = 'MALE',
+  FEMALE = 'FEMALE',
+  NOT_SPECIEFIED = 'NOT_SPECIEFIED'
+}
+export enum CountriesOptions {
+  NOT_SPECIEFIED ='NOT_SPECIEFIED',
+  AFGHANISTAN = 'AFGHANISTAN',
+  ALBANIA = 'ALBANIA',
+  ALGERIA = 'ALGERIA',
+  ANDORRA = 'ANDORRA',
+  ANGOLA = 'ANGOLA',
+  ANTIGUA_AND_BARBUDA = 'ANTIGUA AND BARBUDA',
+  ARGENTINA = 'ARGENTINA',
+  ARMENIA = 'ARMENIA',
+  AUSTRALIA = 'AUSTRALIA',
+  AUSTRIA = 'AUSTRIA',
+  AZERBAIJAN = 'AZERBAIJAN',
+  BAHAMAS = 'BAHAMAS',
+  BAHRAIN = 'BAHRAIN',
+  BANGLADESH = 'BANGLADESH',
+  BARBADOS = 'BARBADOS',
+  BELARUS = 'BELARUS',
+  BELGIUM = 'BELGIUM',
+  BELIZE = 'BELIZE',
+  BENIN = 'BENIN',
+  BHUTAN = 'BHUTAN',
+  BOLIVIA = 'BOLIVIA',
+  BOSNIA_AND_HERZEGOVINA = 'BOSNIA AND HERZEGOVINA',
+  BOTSWANA = 'BOTSWANA',
+  BRAZIL = 'BRAZIL',
+  BRUNEI = 'BRUNEI',
+  BULGARIA = 'BULGARIA',
+  BURKINA_FASO = 'BURKINA FASO',
+  BURUNDI = 'BURUNDI',
+  CABO_VERDE = 'CABO VERDE',
+  CAMBODIA = 'CAMBODIA',
+  CAMEROON = 'CAMEROON',
+  CANADA = 'CANADA',
+  CENTRAL_AFRICAN_REPUBLIC = 'CENTRAL AFRICAN REPUBLIC',
+  CHAD = 'CHAD',
+  CHILE = 'CHILE',
+  CHINA = 'CHINA',
+  COLOMBIA = 'COLOMBIA',
+  COMOROS = 'COMOROS',
+  CONGO_DEMOCRATIC_REPUBLIC = 'CONGO, DEMOCRATIC REPUBLIC OF THE',
+  CONGO_REPUBLIC = 'CONGO, REPUBLIC OF THE',
+  COSTA_RICA = 'COSTA RICA',
+  CROATIA = 'CROATIA',
+  CUBA = 'CUBA',
+  CYPRUS = 'CYPRUS',
+  CZECH_REPUBLIC = 'CZECH REPUBLIC',
+  DENMARK = 'DENMARK',
+  DJIBOUTI = 'DJIBOUTI',
+  DOMINICA = 'DOMINICA',
+  DOMINICAN_REPUBLIC = 'DOMINICAN REPUBLIC',
+  EAST_TIMOR = 'EAST TIMOR',
+  ECUADOR = 'ECUADOR',
+  EGYPT = 'EGYPT',
+  EL_SALVADOR = 'EL SALVADOR',
+  EQUATORIAL_GUINEA = 'EQUATORIAL GUINEA',
+  ERITREA = 'ERITREA',
+  ESTONIA = 'ESTONIA',
+  ESWATINI = 'ESWATINI',
+  ETHIOPIA = 'ETHIOPIA',
+  FIJI = 'FIJI',
+  FINLAND = 'FINLAND',
+  FRANCE = 'FRANCE',
+  GABON = 'GABON',
+  GAMBIA = 'GAMBIA',
+  GEORGIA = 'GEORGIA',
+  GERMANY = 'GERMANY',
+  GHANA = 'GHANA',
+  GREECE = 'GREECE',
+  GRENADA = 'GRENADA',
+  GUATEMALA = 'GUATEMALA',
+  GUINEA = 'GUINEA',
+  GUINEA_BISSAU = 'GUINEA-BISSAU',
+  GUYANA = 'GUYANA',
+  HAITI = 'HAITI',
+  HONDURAS = 'HONDURAS',
+  HUNGARY = 'HUNGARY',
+  ICELAND = 'ICELAND',
+  INDIA = 'INDIA',
+  INDONESIA = 'INDONESIA',
+  IRAN = 'IRAN',
+  IRAQ = 'IRAQ',
+  IRELAND = 'IRELAND',
+  ISRAEL = 'ISRAEL',
+  ITALY = 'ITALY',
+  IVORY_COAST = 'IVORY COAST',
+  JAMAICA = 'JAMAICA',
+  JAPAN = 'JAPAN',
+  JORDAN = 'JORDAN',
+  KAZAKHSTAN = 'KAZAKHSTAN',
+  KENYA = 'KENYA',
+  KIRIBATI = 'KIRIBATI',
+  KOSOVO = 'KOSOVO',
+  KUWAIT = 'KUWAIT',
+  KYRGYZSTAN = 'KYRGYZSTAN',
+  LAOS = 'LAOS',
+  LATVIA = 'LATVIA',
+  LEBANON = 'LEBANON',
+  LESOTHO = 'LESOTHO',
+  LIBERIA = 'LIBERIA',
+  LIBYA = 'LIBYA',
+  LIECHTENSTEIN = 'LIECHTENSTEIN',
+  LITHUANIA = 'LITHUANIA',
+  LUXEMBOURG = 'LUXEMBOURG',
+  MADAGASCAR = 'MADAGASCAR',
+  MALAWI = 'MALAWI',
+  MALAYSIA = 'MALAYSIA',
+  MALDIVES = 'MALDIVES',
+  MALI = 'MALI',
+  MALTA = 'MALTA',
+  MARSHALL_ISLANDS = 'MARSHALL ISLANDS',
+  MAURITANIA = 'MAURITANIA',
+  MAURITIUS = 'MAURITIUS',
+  MEXICO = 'MEXICO',
+  MICRONESIA = 'MICRONESIA',
+  MOLDOVA = 'MOLDOVA',
+  MONACO = 'MONACO',
+  MONGOLIA = 'MONGOLIA',
+  MONTENEGRO = 'MONTENEGRO',
+  MOROCCO = 'MOROCCO',
+  MOZAMBIQUE = 'MOZAMBIQUE',
+  MYANMAR = 'MYANMAR',
+  NAMIBIA = 'NAMIBIA',
+  NAURU = 'NAURU',
+  NEPAL = 'NEPAL',
+  NETHERLANDS = 'NETHERLANDS',
+  NEW_ZEALAND = 'NEW ZEALAND',
+  NICARAGUA = 'NICARAGUA',
+  NIGER = 'NIGER',
+  NIGERIA = 'NIGERIA',
+  NORTH_KOREA = 'NORTH KOREA',
+  NORTH_MACEDONIA = 'NORTH MACEDONIA',
+  NORWAY = 'NORWAY',
+  OMAN = 'OMAN',
+  PAKISTAN = 'PAKISTAN',
+  PALAU ='PALAU',
+  PALESTINE = 'PALESTINE',
+  PANAMA = 'PANAMA',
+  PAPUA_NEW_GUINEA = 'PAPUA_NEW_GUINEA',
+  PARAGUAY = 'PARAGUAY',
+  PERU ='PERU',
+  PHILIPPINES = 'PHILIPPINES',
+  POLAND = 'POLAND',
+  PORTUGAL = 'PORTUGAL',
+  QATAR = 'QATAR',
+  ROMANIA = 'ROMANIA',
+  RUSSIA = 'RUSSIA',
+  RWANDA = 'RWANDA',
+  SAINT_KITTS_AND_NEVIS = 'SAINT_KITTS_AND_NEVIS',
+  SAINT_LUCIA = 'SAINT_LUCIA',
+  SAINT_VINCENT_AND_THE_GRENADINES = 'SAINT_VINCENT_AND_THE_GRENADINES',
+  SAMOA = 'SAMOA',
+  SAN_MARINO ='SAN_MARINO',
+  SAO_TOME_AND_PRINCIPE = 'SAO_TOME_AND_PRINCIPE',
+  SAUDI_ARABIA = 'SAUDI_ARABIA',
+  SENEGAL = 'SENEGAL',
+  SERBIA = 'SERBIA',
+  SEYCHELLES = 'SEYCHELLES',
+  SIERRA_LEONE = 'SIERRA_LEONE',
+  SINGAPORE = 'SINGAPORE',
+  SLOVAKIA = 'SLOVAKIA',
+  SLOVENIA = 'SLOVENIA',
+  SOLOMON_ISLANDS = 'SOLOMON_ISLANDS',
+  SOMALIA = 'SOMALIA',
+  SOUTH_AFRICA = 'SOUTH_AFRICA',
+  SOUTH_KOREA = 'SOUTH_KOREA',
+  SOUTH_SUDAN = 'SOUTH_SUDAN',
+  SPAIN = 'SPAIN',
+  SRI_LANKA = 'SRI_LANKA',
+  SUDAN = 'SUDAN',
+  SURINAME = 'SURINAME',
+  SWEDEN = 'SWEDEN',
+  SWITZERLAND = 'SWITZERLAND',
+  SYRIA = 'SYRIA',
+  TAIWAN = 'TAIWAN',
+  TAJIKISTAN = 'TAJIKISTAN',
+  TANZANIA = 'TANZANIA',
+  THAILAND = 'THAILAND', 
+  TOGO = 'TOGO',
+  TONGA = 'TONGA',
+  TRINIDAD_AND_TOBAGO = 'TRINIDAD_AND_TOBAGO',
+  TUNISIA= 'TUNISIA',
+  TURKEY = 'TURKEY',
+  TURKMENISTAN = 'TURKMENISTAN',
+  TUVALU = 'TUVALU',
+  UGANDA = 'UGANDA',
+  UKRAINE = 'UKRAINE',
+  UNITED_ARAB_EMIRATES = 'UNITED_ARAB_EMIRATES',
+  UNITED_KINGDOM = 'UNITED_KINGDOM',
+  UNITED_STATES = 'UNITED_STATES',
+  URUGUAY = 'URUGUAY',
+  UZBEKISTAN = 'UZBEKISTAN',
+  VANUATU = 'VANUATU',
+  VATICAN_CITY = 'VATICAN_CITY',
+  VENEZUELA = 'VENEZUELA',
+  VIETNAM = 'VIETNAM',
+  YEMEN = 'YEMEN',
+  ZAMBIA = 'ZAMBIA',
+  ZIMBABWE = 'ZIMBABWE',
+}
+// File: src/decorators/Security.decorator.ts
+import { Request, Response, NextFunction } from "express";
+import { supabase } from "../providers/supabase/supabase";
+import { BaseError, HttpStatusCode } from "../providers/errorProvider";
+
+export function Secure(): MethodDecorator {
+    return (target, propertyKey) => {
+        const originalMethod = target[propertyKey];
+        target[propertyKey] = async function (req: Request, res: Response, next: NextFunction) {
+            const accessToken = req.headers.authorization?.split(' ')[1];
+            const user=await supabase.auth.getUser(accessToken);
+            
+            if(!user.data.user) throw new BaseError('FORBIDDEN', HttpStatusCode.FORBIDDEN, false, 'User UnAuthenticated')
+            return originalMethod.apply(this, [req, res, next]);
+        };
+    };
+}
+
 // File: src/decorators/controller.decorator.ts
 import { MetadataKeys } from "./metadata.keys";
 
@@ -18,25 +308,49 @@ import { Type } from "./service.decorator";
 import { IRouter } from "./types";
 
 
+interface MethodDecoratorOptions {
+  path: string;
+  requestBodyDto?: Type<any> | any;
+  responseBodyDto?: Type<any> | any;
+}
+
 export const methodDecoratorFactory = (method: Methods) => {
-  return (path: string, requestBodyDto?: any, responseBodyDto?: any): MethodDecorator => {
+  return (
+    pathOrOptions: string | MethodDecoratorOptions,
+    requestBodyDto?: Type<any> | any,
+    responseBodyDto?: Type<any> | any
+  ): MethodDecorator => {
     return (target, propertyKey) => {
+      let path: string;
+      let requestBodyDtoOption: Type<any> | any | undefined;
+      let responseBodyDtoOption: Type<any> | any | undefined;
+
+      if (typeof pathOrOptions === "string") {
+        path = pathOrOptions;
+        requestBodyDtoOption = requestBodyDto;
+        responseBodyDtoOption = responseBodyDto;
+      } else {
+        path = pathOrOptions.path;
+        requestBodyDtoOption = pathOrOptions.requestBodyDto;
+        responseBodyDtoOption = pathOrOptions.responseBodyDto;
+      }
+
       const controllerClass = target.constructor;
-      const routers: IRouter[] =   Reflect.hasMetadata(MetadataKeys.ROUTERS, controllerClass) ?
-        Reflect.getMetadata(MetadataKeys.ROUTERS, controllerClass) : [];
+      const routers: IRouter[] =
+        Reflect.hasMetadata(MetadataKeys.ROUTERS, controllerClass)
+          ? Reflect.getMetadata(MetadataKeys.ROUTERS, controllerClass)
+          : [];
       routers.push({
         method,
         path,
         handlerName: propertyKey,
-        requestBodyDto,
-        responseBodyDto,
+        requestBodyDto: requestBodyDtoOption,
+        responseBodyDto: responseBodyDtoOption,
       });
       Reflect.defineMetadata(MetadataKeys.ROUTERS, routers, controllerClass);
-    }
-  }
-}
-
-
+    };
+  };
+};
 // File: src/decorators/index.ts
 import { methodDecoratorFactory } from "./decoratorfactory";
 
@@ -160,15 +474,31 @@ export function mixin<T>(mixinClass: Type<T>) {
   Injectable()(mixinClass);
   return mixinClass;
 }
+// File: src/decorators/token.decorator.ts
+import { createParamDecorator } from 'routing-controllers';
+import { ForbiddenError } from 'routing-controllers';
+
+export function Token(): ParameterDecorator {
+  return createParamDecorator({
+    required: true,
+    value: action => {
+      const token = action.request.headers['authorization']?.split(' ')[1];
+      if (!token) {
+        throw new ForbiddenError('Access token is missing');
+      }
+      return token;
+    },
+  });
+}
 // File: src/decorators/types.d.ts
 export interface IRouter {
   method: Methods;
   path: string;
   handlerName: string | symbol;
-  requestBodyDto?: Type<any>;
-  responseBodyDto?: Type<any>;
+  requestBodyDto?: Type<any> | any;
+  responseBodyDto?: Type<any> | any;
 }
-// File: src/middlewares/errorHandlers.ts
+// File: src/middlewares/errorHandler.ts
 import { BaseError, HttpStatusCode } from "../providers/errorProvider";
 import { NextFunction, Request, Response } from "express";
 
@@ -194,6 +524,56 @@ export function errorHandler(
 }
 
 // Register the error handler as the last middleware
+// File: src/modules.ts
+import { Express } from "express";
+import { GlobalRoutes } from "./decorators";
+import { AuthController } from "./useCases/Auth/auth.controller";
+import { AuthRoutes } from "./useCases/Auth/auth.route";
+import { ProfileRoutes } from "./useCases/Profile/profile.route";
+
+@GlobalRoutes([AuthRoutes, ProfileRoutes])
+export class AppGlobalRoutes {
+  startModule(app: Express): void {}
+}
+
+
+
+// File: src/providers/errorProvider.js
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.APIError = exports.BaseError = exports.HttpStatusCode = void 0;
+var HttpStatusCode;
+(function (HttpStatusCode) {
+    HttpStatusCode[HttpStatusCode["OK"] = 200] = "OK";
+    HttpStatusCode[HttpStatusCode["BAD_REQUEST"] = 400] = "BAD_REQUEST";
+    HttpStatusCode[HttpStatusCode["NOT_FOUND"] = 404] = "NOT_FOUND";
+    HttpStatusCode[HttpStatusCode["INTERNAL_SERVER"] = 500] = "INTERNAL_SERVER";
+    HttpStatusCode[HttpStatusCode["FORBIDDEN"] = 403] = "FORBIDDEN";
+    HttpStatusCode[HttpStatusCode["UNAUTORIZED"] = 401] = "UNAUTORIZED";
+})(HttpStatusCode || (exports.HttpStatusCode = HttpStatusCode = {}));
+class BaseError extends Error {
+    constructor(name, httpCode, isOperational, description) {
+        super(description);
+        Object.setPrototypeOf(this, new.target.prototype);
+        this.name = name;
+        this.httpCode = httpCode;
+        this.isOperational = isOperational;
+        Error.captureStackTrace(this);
+    }
+}
+exports.BaseError = BaseError;
+class APIError extends BaseError {
+    constructor(name, httpCode = HttpStatusCode.INTERNAL_SERVER, isOperational = true, description = "internal server error") {
+        super(name, httpCode, isOperational, description);
+    }
+}
+exports.APIError = APIError;
+class HTTP404Error extends BaseError {
+    constructor(description) {
+        super("NOT FOUND", HttpStatusCode.NOT_FOUND, true, description);
+    }
+}
+
 // File: src/providers/errorProvider.ts
 export enum HttpStatusCode {
   OK = 200,
@@ -242,255 +622,767 @@ class HTTP404Error extends BaseError {
     super("NOT FOUND", HttpStatusCode.NOT_FOUND, true, description);
   }
 }
-// File: src/route.ts
-import { Express } from "express";
-import { GlobalRoutes } from "./decorators";
-import { userRoutes } from "./useCases/user/user.route";
+// File: src/providers/prisma/prismaClient.ts
+import { PrismaClient as Prisma } from "@prisma/client";
 
-@GlobalRoutes([userRoutes])
-export class AppGlobalRoutes {
-  startModule(app: Express): void {}
+
+export class PrismaService {
+  public readonly client: Prisma; 
+
+  constructor() {
+    this.client = new Prisma();
+  }
+
+  async close() {
+    await this.client.$disconnect();
+  }
 }
-
-
-
+// File: src/providers/supabase/supabase.ts
+import { createClient } from '@supabase/supabase-js'
+export const supabase = createClient('https://mkroqhhzgdfcinnephdx.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1rcm9xaGh6Z2RmY2lubmVwaGR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTczMzY4NTYsImV4cCI6MjAzMjkxMjg1Nn0.nLGB3XDH3cuh3C3ixIBWfoAN6nGS0yQUggaOEnaIh0Q')
 // File: src/server.ts
-import express, { NextFunction, Request, Response } from "express";
-
+import express, { NextFunction, Request, Response, Router } from "express";
 import "express-async-errors";
-import * as dotenv from "dotenv";
 import 'reflect-metadata';
+import * as dotenv from "dotenv";
 import * as http from "http";
 import cors from "cors";
-import { AppGlobalRoutes } from "./route";
-
-
+import { AppGlobalRoutes } from "./modules";
+import { errorHandler } from "./middlewares/errorHandler";
 
 
 
 dotenv.config();
-
 const app = express();
-
 const port = process.env.PORT || 3000;
 const appGlobalRoutesInstance = new AppGlobalRoutes();
 
+
+app.use(express.json());
 app.use(cors());
 appGlobalRoutesInstance.startModule(app);
-app.use(express.json());
+
+
+app.use(errorHandler);
+
 app.listen(port);
 
-
-
-
 export { app };
-// File: src/swagger.ts
-import * as fs from 'fs';
-import * as path from 'path';
-import { SwaggerObject } from 'swagger-ui-dist';
-import { MetadataKeys } from './decorators/metadata.keys';
-import { IRouter } from './decorators/types';
-import { validationMetadatasToSchemas } from 'class-validator-jsonschema';
-import { getFromContainer } from 'class-validator';
+// File: src/useCases/Auth/auth.controller.ts
+import { Controller, Post, Get, Put, Delete } from "../../decorators";
+import { NextFunction, Request, Response } from "express";
+import { ICreateAuthDto, UpdateAuthDto } from "./dto";
+import { AuthUseCase } from "./auth.service";
+import { ISignIn } from "./dto/CreateAuth.dto";
+import { Secure } from "../../decorators/Security.decorator";
+import { Token } from "../../decorators/token.decorator";
 
-import 'reflect-metadata';
+@Controller('auth', '1')
+export class AuthController {
+  @Post("sign_up")
+  async handleCreateauth(request: Request<{}, {}, ICreateAuthDto>, response: Response, next: NextFunction) {
+    try{
+      const data = await new AuthUseCase().executeSignUp(request.body)
+      return response.json(data);
+    }catch(err){
+      next(err);
+    }
+  }
 
-const swaggerInfo = {
-  openapi: '3.0.0',
-  info: {
-    title: 'Your API',
-    version: '1.0.0',
-    description: 'Your API description',
-  },
-  servers: [
-    {
-      url: 'http://localhost:8000',
-    },
-  ],
-};
+  @Post("sign_in")
+  async handleSignIn(request: Request<{}, {}, ISignIn>, response: Response, next: NextFunction) {
+    try{
+      const data = await new AuthUseCase().executeSignIn(request.body)
+      return response.json(data);
+    }catch(err){
+      next(err);
+    }
+  }
 
-function extractMetadata() {
-  const metadata = [];
 
-  // Import your controller classes
-  const controllerClasses = [
-    // Import your controller classes here
-    require('./useCases/Files/files.controller').FilesController,
-    require('./useCases/prompts/prompts.controller').promptsController,
-    require('./useCases/user/user.controller').UserController,
-    require('./useCases/workflow/workflow.controller').WorkflowController,
-  ];
-
-  controllerClasses.forEach((controllerClass) => {
-    const basePath = Reflect.getMetadata(MetadataKeys.BASE_PATH, controllerClass) || '';
-    const version = Reflect.getMetadata(MetadataKeys.VERSION, controllerClass) || '';
-    const routers: IRouter[] = Reflect.getMetadata(MetadataKeys.ROUTERS, controllerClass) || [];
-
-    routers.forEach(({ method, path, handlerName,requestBodyDto,responseBodyDto  }) => {
-      const processedPath = path.startsWith('/') ? path : `/${path}`;
-      const routePath = version ? `/api/v${version}${basePath}${processedPath}` : `${basePath}${processedPath}`;
-
-      metadata.push({
-        method,
-        path: routePath,
-        handlerName,
-        requestBodyDto,
-        responseBodyDto,
-        controller: controllerClass.name,
-        // Add other relevant metadata here
-      });
-    });
-  });
-
-  return metadata;
+ 
+  @Secure()
+  @Get("/refresh_token")
+  async handleRefreshToken(request: Request<{id: string}>, response: Response,next: NextFunction, @Token() token: string) {
+    try{
+      const data = await new AuthUseCase().executeRefreshToken(token)
+      return response.status(200).json(data);
+    }catch(err){
+      next(err);
+    }
+  }
 }
-function generateSwaggerDocs(metadata) {
-  const swaggerDoc: SwaggerObject = { ...swaggerInfo, paths: {} };
 
-  metadata.forEach((route) => {
-    const pathItem = {
-      [route.method.toLowerCase()]: {
-        summary: `${route.method} ${route.path}`,
-        description: `${route.controller}.${route.handlerName}`,
-        requestBody: route.requestBodyDto
-          ? {
-              description: 'Request body',
-              required: true,
-              content: {
-                'application/json': {
-                  schema: classValidatorToJSONSchema(route.requestBodyDto)
-                },
-              },
-            }
-          : {},
-        responses: {
-          '200': {
-            description: 'Successful response',
-            content: {
-              'application/json': {
-                schema: classValidatorToJSONSchema(route.responseBodyDto)
-              },
-            },
-          },
-        },
+// File: src/useCases/Auth/auth.route.ts
+import { Route } from "../../decorators/module.decorator";
+import { AuthController } from "./auth.controller";
+
+@Route([AuthController])
+export class AuthRoutes {
+  // Add route logic here if needed
+}
+
+// File: src/useCases/Auth/auth.service.ts
+import { AuthResponse, SignUpWithPasswordCredentials } from "@supabase/supabase-js";
+import { supabase } from "../../providers/supabase/supabase";
+import { ICreateAuthDto, ISignIn } from "./dto/CreateAuth.dto";
+import { BaseError, HttpStatusCode } from "../../providers/errorProvider";
+import { PrismaService } from "../../providers/prisma/prismaClient";
+
+class AuthUseCase {
+  private readonly prisma: PrismaService
+  constructor(){
+    this.prisma = new PrismaService();
+  }
+  async executeSignUp(dto:ICreateAuthDto) {
+    const user: AuthResponse = await supabase.auth.signUp({
+      options: {
+        data: {
+          firstName: dto.email,
+          lastName: dto.last_name
+        }
       },
-    };
-    const modelName = route.controller.replace('Controller', '').toUpperCase();
-    swaggerDoc.paths[`${modelName}:${route.handlerName}`] = pathItem;
-  });
+      email: dto.email,
+      password: dto.password
+    })
+    if(user.error) throw new BaseError('FORBIDDEN', HttpStatusCode.FORBIDDEN, true, 'User already exists')
 
-  return swaggerDoc;
+
+    delete user.data.user.user_metadata,
+    delete user.data.user.identities
+    return {
+      session: user.data.session,
+      user: user.data.user,
+    }
+  }
+
+  async executeSignIn(dto: ISignIn) {
+    const user: AuthResponse = await supabase.auth.signInWithPassword({
+      email: dto.email,
+      password: dto.password
+    })
+    const user_profile = await this.prisma.client.profiles.findUnique({
+      where: {
+        public_id: user.data.user.id
+      }
+    })
+    delete user.data.user.user_metadata,
+    delete user.data.user.identities
+    return {
+      profile: user_profile,
+      session: user.data.session,
+      user: user.data.user
+    }
+  }
+
+
+  async executeRefreshToken(refresh_token: string) {
+    const {data, error} = await supabase.auth.refreshSession({refresh_token: refresh_token})
+    if(error) throw new BaseError(error.code, error.status, false, error.message)
+    return data
+  }
+
+  async getCurrentUser(access_token: string){
+    const {data, error} = await supabase.auth.getUser(access_token)
+    if(error) throw new BaseError(error.code, error.status, false, error.message)
+    const profile = await this.prisma.client.profiles.findUnique({
+      where: {
+        public_id: data.user.id
+      }
+    })
+    if(error) throw new BaseError(error.code, error.status, false, error.message)
+
+    return{
+      profile: profile,
+      user: data.user
+    }
+  }
 }
-function generateSwaggerFile() {
-  const metadata = extractMetadata();
-  const swaggerDoc = generateSwaggerDocs(metadata);
 
-  const swaggerFilePath = path.join(__dirname, 'swagger.json');
-  fs.writeFileSync(swaggerFilePath, JSON.stringify(swaggerDoc, null, 2));
-  console.log(`Swagger documentation generated at ${swaggerFilePath}`);
-}
+export { AuthUseCase };
 
-function classValidatorToJSONSchema(classType: any) {
-  if(!classType) return null
-  const metadatas = getFromContainer(classType) || [];
-
-  // Convert class-validator decorators to JSON schema
-  const schemas = validationMetadatasToSchemas(metadatas);
-
-  // Get the schema for the class
-  const schema = schemas[classType.name];
-
-  return schema;
-}
+// File: src/useCases/Auth/dto/CreateAuth.dto.ts
+import { UserSexOptions, CountriesOptions } from '@prisma/client';
+import { IsDateString, IsEmail, IsEnum, IsMobilePhone, IsNotEmpty, IsOptional, IsPhoneNumber, IsString } from 'class-validator';
 
 
+export class ICreateAuthDto {
+  @IsString()
+  first_name: string;
 
+  @IsString()
+  last_name: string;
 
-generateSwaggerFile();
-// File: src/useCases/user/dto/createUser.dto.ts
-import { IsEmail, IsNotEmpty, IsString } from 'class-validator';
-
-export class CreateUserDto {
   @IsEmail()
-  @IsNotEmpty()
   email: string;
 
   @IsString()
-  @IsNotEmpty()
+  password: string;
+
+  @IsString()
+  age: number;
+
+  @IsEnum(UserSexOptions)
+  sex: UserSexOptions
+  
+  @IsEnum(CountriesOptions)
+  nationality: CountriesOptions;
+
+  @IsEnum(CountriesOptions)
+  citzenship: CountriesOptions;
+
+  @IsDateString()
+  date: Date;
+
+  @IsOptional()
+  @IsPhoneNumber()
+  phone?: string
+
+  @IsOptional()
+  @IsMobilePhone()
+  mobile?: string
+
+  @IsOptional()
+  @IsString()
+  address?: string
+}
+
+export class ISignIn{
+  @IsEmail()
+  email: string;
+  @IsString()
   password: string;
 }
-// File: src/useCases/user/dto/index.ts
-import { CreateUserDto } from "./createUser.dto";
-import { UpdateUserDto } from "./updateUser.dto";
+// File: src/useCases/Auth/dto/UpdateAuth.dto.ts
+import { ICreateAuthDto } from "./CreateAuth.dto";
 
-export {CreateUserDto, UpdateUserDto}
-// File: src/useCases/user/dto/updateUser.dto.ts
-import { CreateUserDto } from "./createUser.dto";
+type CreateAuthDtoPartial = Partial<ICreateAuthDto>
+export class UpdateAuthDto implements CreateAuthDtoPartial {}
 
-type CreateUserDtoPartial = Partial<CreateUserDto>
-export class UpdateUserDto implements CreateUserDtoPartial{
+// File: src/useCases/Auth/dto/index.ts
+import { ICreateAuthDto } from "./CreateAuth.dto";
+import { UpdateAuthDto } from "./UpdateAuth.dto";
+
+export { ICreateAuthDto, UpdateAuthDto }
+
+// File: src/useCases/Profile/dto/CreateProfile.dto.ts
+import { UserSexOptions, CountriesOptions, Profiles, UserAthleteProfile, UserScoutProfile } from '@prisma/client';
+import { IsDateString, IsEmail, IsEnum, IsMobilePhone, IsNotEmpty, IsOptional, IsPhoneNumber, IsString } from 'class-validator';
+
+
+export type ICreateProfileDto = Profiles & UserAthleteProfile & UserScoutProfile & {
+  userType: 'ATHLETE' | 'SCOUT'
 }
-// File: src/useCases/user/user.controller.ts
-import { Controller, Post, Get, Put, Delete } from "../../decorators";
-import { Request, Response } from "express";
+// File: src/useCases/Profile/dto/UpdateProfile.dto.ts
+import { ICreateProfileDto } from "./CreateProfile.dto";
 
-@Controller('/user', '1')
-export class userController {
-  @Post("")
-  async handleCreateuser(request: Request, response: Response) {
-    // Handle creation of a new resource
-    return response.json({ message: "Create user" });
+type CreateProfileDtoPartial = Partial<ICreateProfileDto>
+export class UpdateProfileDto implements CreateProfileDtoPartial {}
+
+// File: src/useCases/Profile/dto/index.ts
+import { ICreateProfileDto } from "./CreateProfile.dto";
+import { UpdateProfileDto } from "./UpdateProfile.dto";
+
+export { ICreateProfileDto, UpdateProfileDto }
+
+// File: src/useCases/Profile/profile.controller.ts
+import { Controller, Post, Get, Put, Delete } from "../../decorators";
+import { NextFunction, Request, Response } from "express";
+import { ICreateProfileDto, UpdateProfileDto } from "./dto";
+import { ProfileUseCase } from "./profile.service";
+import { Secure } from "../../decorators/Security.decorator";
+import { supabase } from "../../providers/supabase/supabase";
+import { BaseError, HttpStatusCode } from "../../providers/errorProvider";
+
+@Controller('/profile', '1')
+export class ProfileController {
+  @Secure()
+  @Post("/create_profile")
+  async handleCreateprofile(request: Request<{}, {}, ICreateProfileDto>, response: Response, next: NextFunction) {
+    try{
+      const accessToken = request.headers.authorization?.split(' ')[1];
+      const user= await supabase.auth.getUser(accessToken);
+      console.log(user)
+      if(!user.data.user) throw new BaseError('FORBIDDEN', HttpStatusCode.FORBIDDEN, false, 'User UnAuthenticated')
+      const data = await new ProfileUseCase().executeCreateProfile(request.body)
+      return response.json(data);
+    }catch(err){
+      next(err)
+    }
+
   }
 
   @Get("")
-  async handleReaduser(request: Request, response: Response) {
+  async handleReadProfile(request: Request, response: Response) {
     // Handle reading a resource
-    return response.json({ message: "Read user" });
+    return response.json({ message: "Read profile" });
   }
 
   @Put("/:id")
-  async handleUpdateuser(request: Request, response: Response) {
+  async handleUpdateProfile(request: Request<{id: string}, {}, UpdateProfileDto>, response: Response) {
     // Handle updating a resource by ID
-    return response.json({ message: "Update user" });
+    return response.json({ message: "Update profile" });
   }
 
   @Delete("/:id")
-  async handleDeleteuser(request: Request, response: Response) {
+  async handleDeleteProfile(request: Request<{id: string}>, response: Response) {
     // Handle deleting a resource by ID
-    return response.json({ message: "Delete user" });
+    return response.json({ message: "Delete profile" });
   }
 }
 
-// File: src/useCases/user/user.route.ts
+// File: src/useCases/Profile/profile.route.ts
 import { Route } from "../../decorators/module.decorator";
-import { userController } from "./user.controller";
+import { ProfileController } from "./profile.controller";
 
-@Route([userController])
-export class userRoutes {
-  
+@Route([ProfileController])
+export class ProfileRoutes {
+  // Add route logic here if needed
 }
 
-// File: src/useCases/user/user.service.ts
-class userUseCase {
-  async executeCreateuser() {
-    
+// File: src/useCases/Profile/profile.service.ts
+import { BaseError, HttpStatusCode } from "../../providers/errorProvider";
+import { PrismaService } from "../../providers/prisma/prismaClient";
+import { ICreateProfileDto } from "./dto";
+
+
+class ProfileUseCase {
+  private readonly prisma: PrismaService
+  constructor(){
+    this.prisma = new PrismaService();
+  }
+  async executeCreateProfile(dto: ICreateProfileDto) {
+    await this.validateUser(dto)
+    const profile = await this.prisma.client.profiles.create({
+      data: {
+        first_name: dto.first_name,
+        last_name: dto.last_name,
+        email: dto.email,
+        birt_date: new Date(dto.birt_date).toISOString(),
+        sex: dto.sex,
+        address: dto.address ? dto.address : null,
+        mobile: dto.mobile ? dto.mobile : null,
+        phone: dto.phone ? dto.phone : null,
+        nationality: dto.nationality,
+        public_id: dto.public_id,
+        sport_id: dto.sport_id,
+      }
+    })
+    if(dto.userType === 'ATHLETE'){
+      const ahtlete = await this.prisma.client.userAthleteProfile.create({
+        data: {
+          age: dto.age,
+          height: dto.height,
+          weight: dto.weight,
+          profile_id: profile.id,
+          citzenship: dto.citzenship,
+          height_metric: dto.height_metric,
+          weight_metric: dto.weight_metric
+        }
+      })
+      return{
+        profile: profile,
+        ahtlete: ahtlete
+      }
+    }else {
+      const scout = await this.prisma.client.userScoutProfile.create({
+        data: {
+          profile_id: profile.id,
+          affiliations: dto.affiliations,
+          organization_id: dto.organization_id,
+        }
+      })
+      return{
+        profile: profile,
+        scout: scout
+      }
+    }
   }
 
-  async executeReaduser() {
-    // Implement the read use case logic here
+  async executeReadAthletes(page: number, items:number) {
+    const athlete = await this.prisma.client.userAthleteProfile.findMany({
+      include: {
+        profile: true,
+      }
+    })
+    if(!athlete) throw new BaseError('NOT FOUND',404, false,'there are no athlete users in the database')
+    return [...athlete]
+  }
+  async executeReadAthlete(public_id: string) {
+    const athlete = await this.prisma.client.userAthleteProfile.findFirst({
+      include: {
+        profile: true,
+      },
+      where: {
+        profile: {
+          public_id
+        }
+      }
+    })
+    if(!athlete) throw new BaseError('NOT FOUND',404, false,'there are no athlete users in the database')
+    return {
+      profile: 
+    }
   }
 
-  async executeUpdateuser() {
+  async executeUpdateProfile() {
     // Implement the update use case logic here
   }
 
-  async executeDeleteuser() {
+  async executeDeleteProfile() {
     // Implement the delete use case logic here
+  }
+  private async validateUser(dto: ICreateProfileDto){
+    if(!dto.userType ) throw new BaseError('BAD REQUEST', HttpStatusCode.BAD_REQUEST, false, 'Error creating profile')
+    if(dto.userType === 'ATHLETE' ){
+      if(!dto.height || !dto.height || !dto.weight || !dto.weight_metric 
+        || !dto.citzenship || !dto.status || !dto.age 
+       )throw new BaseError('BAD REQUEST', HttpStatusCode.BAD_REQUEST, false, 'could not create athlete profile ')
+       return;
+     }
   }
 }
 
-export { userUseCase };
 
+
+
+
+export { ProfileUseCase };
+
+// File: prisma/migrations/20240602214810_init/migration.sql
+-- CreateEnum
+CREATE TYPE "UserSexOptions" AS ENUM ('NOT_SPECIEFIED', 'MALE', 'FEMALE');
+
+-- CreateEnum
+CREATE TYPE "NationalityOptions" AS ENUM ('NOT_SPECIEFIED', 'INDIAN', 'MOZAMBICAN', 'PORTUGUESE', 'ARGENTINIAN');
+
+-- CreateEnum
+CREATE TYPE "MediaOptions" AS ENUM ('VIDEO', 'IMAGE');
+
+-- CreateEnum
+CREATE TYPE "HeightOptions" AS ENUM ('CM', 'FT');
+
+-- CreateEnum
+CREATE TYPE "WeightOptions" AS ENUM ('KG', 'LB');
+
+-- CreateEnum
+CREATE TYPE "AthleteStatusOptions" AS ENUM ('NOT_SPECIEFIED', 'PROFESSIONAL', 'AMATEUR');
+
+-- CreateEnum
+CREATE TYPE "UserAccountStatusOptions" AS ENUM ('ACTIVE', 'INATIVE');
+
+-- CreateTable
+CREATE TABLE "User" (
+    "id" SERIAL NOT NULL,
+    "public_id" TEXT NOT NULL,
+    "first_name" TEXT NOT NULL,
+    "last_name" TEXT NOT NULL,
+    "age" INTEGER NOT NULL,
+    "email" TEXT NOT NULL,
+    "password" TEXT NOT NULL,
+    "sex" "UserSexOptions" NOT NULL DEFAULT 'NOT_SPECIEFIED',
+    "birt_date" TIMESTAMP(3) NOT NULL,
+    "account_status" "UserAccountStatusOptions" NOT NULL DEFAULT 'INATIVE',
+    "nationality" "NationalityOptions" NOT NULL DEFAULT 'NOT_SPECIEFIED',
+    "citzenship" "NationalityOptions" NOT NULL DEFAULT 'NOT_SPECIEFIED',
+    "sport_id" INTEGER,
+    "phone" TEXT,
+    "mobile" TEXT,
+    "address" TEXT,
+
+    CONSTRAINT "User_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "UserAthleteProfile" (
+    "id" SERIAL NOT NULL,
+    "birth_country" "NationalityOptions" NOT NULL DEFAULT 'NOT_SPECIEFIED',
+    "citzenship" TEXT NOT NULL,
+    "height" DOUBLE PRECISION NOT NULL,
+    "height_metric" "HeightOptions" NOT NULL DEFAULT 'CM',
+    "weight" DOUBLE PRECISION NOT NULL,
+    "weight_metric" "WeightOptions" NOT NULL DEFAULT 'KG',
+    "address" TEXT NOT NULL,
+    "phone" TEXT NOT NULL,
+    "mobile" TEXT NOT NULL,
+    "status" "AthleteStatusOptions" NOT NULL DEFAULT 'NOT_SPECIEFIED',
+    "leagues_played" TEXT,
+
+    CONSTRAINT "UserAthleteProfile_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "UserScoutProfile" (
+    "id" SERIAL NOT NULL,
+    "address" TEXT NOT NULL,
+    "phone" TEXT NOT NULL,
+    "mobile" TEXT NOT NULL,
+    "organization_id" INTEGER NOT NULL,
+    "affiliations" TEXT[],
+
+    CONSTRAINT "UserScoutProfile_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "UserGuardian" (
+    "id" SERIAL NOT NULL,
+    "name" TEXT NOT NULL,
+    "relationship" TEXT NOT NULL,
+    "profile_id" INTEGER NOT NULL,
+    "concent_form" TEXT NOT NULL,
+
+    CONSTRAINT "UserGuardian_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Sports" (
+    "id" SERIAL NOT NULL,
+    "public_id" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+
+    CONSTRAINT "Sports_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "SportsAttributes" (
+    "id" SERIAL NOT NULL,
+    "name" TEXT NOT NULL,
+    "sport_id" INTEGER NOT NULL,
+
+    CONSTRAINT "SportsAttributes_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "UserOrganization" (
+    "id" SERIAL NOT NULL,
+    "public_id" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "email" TEXT NOT NULL,
+    "phone" TEXT,
+    "mobile" TEXT,
+    "document_url" TEXT NOT NULL,
+    "profile_id" INTEGER NOT NULL,
+
+    CONSTRAINT "UserOrganization_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "UserMedia" (
+    "id" SERIAL NOT NULL,
+    "public_id" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "type" "MediaOptions" NOT NULL,
+    "media_url" TEXT NOT NULL,
+
+    CONSTRAINT "UserMedia_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "UserAppointments" (
+    "athlete_id" INTEGER NOT NULL,
+    "scout_id" INTEGER NOT NULL,
+    "title" TEXT NOT NULL,
+    "description" TEXT NOT NULL,
+    "duration" TEXT NOT NULL,
+    "scheduled" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "UserAppointments_pkey" PRIMARY KEY ("athlete_id","scout_id")
+);
+
+-- CreateIndex
+CREATE UNIQUE INDEX "User_public_id_key" ON "User"("public_id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Sports_public_id_key" ON "Sports"("public_id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "UserOrganization_public_id_key" ON "UserOrganization"("public_id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "UserOrganization_profile_id_key" ON "UserOrganization"("profile_id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "UserMedia_public_id_key" ON "UserMedia"("public_id");
+
+-- AddForeignKey
+ALTER TABLE "User" ADD CONSTRAINT "User_sport_id_fkey" FOREIGN KEY ("sport_id") REFERENCES "Sports"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "UserGuardian" ADD CONSTRAINT "UserGuardian_profile_id_fkey" FOREIGN KEY ("profile_id") REFERENCES "UserAthleteProfile"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "SportsAttributes" ADD CONSTRAINT "SportsAttributes_sport_id_fkey" FOREIGN KEY ("sport_id") REFERENCES "Sports"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "UserOrganization" ADD CONSTRAINT "UserOrganization_profile_id_fkey" FOREIGN KEY ("profile_id") REFERENCES "UserScoutProfile"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "UserAppointments" ADD CONSTRAINT "UserAppointments_athlete_id_fkey" FOREIGN KEY ("athlete_id") REFERENCES "UserAthleteProfile"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "UserAppointments" ADD CONSTRAINT "UserAppointments_scout_id_fkey" FOREIGN KEY ("scout_id") REFERENCES "UserScoutProfile"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+// File: prisma/migrations/20240603172155_updates/migration.sql
+/*
+  Warnings:
+
+  - The `nationality` column on the `User` table would be dropped and recreated. This will lead to data loss if there is data in the column.
+  - The `citzenship` column on the `User` table would be dropped and recreated. This will lead to data loss if there is data in the column.
+  - The `birth_country` column on the `UserAthleteProfile` table would be dropped and recreated. This will lead to data loss if there is data in the column.
+
+*/
+-- CreateEnum
+CREATE TYPE "CountriesOptions" AS ENUM ('NOT_SPECIEFIED', 'AFGHANISTAN', 'ALBANIA', 'ALGERIA', 'ANDORRA', 'ANGOLA', 'ANTIGUA_AND_BARBUDA', 'ARGENTINA', 'ARMENIA', 'AUSTRALIA', 'AUSTRIA', 'AZERBAIJAN', 'BAHAMAS', 'BAHRAIN', 'BANGLADESH', 'BARBADOS', 'BELARUS', 'BELGIUM', 'BELIZE', 'BENIN', 'BHUTAN', 'BOLIVIA', 'BOSNIA_AND_HERZEGOVINA', 'BOTSWANA', 'BRAZIL', 'BRUNEI', 'BULGARIA', 'BURKINA_FASO', 'BURUNDI', 'CABO_VERDE', 'CAMBODIA', 'CAMEROON', 'CANADA', 'CENTRAL_AFRICAN_REPUBLIC', 'CHAD', 'CHILE', 'CHINA', 'COLOMBIA', 'COMOROS', 'CONGO_DEMOCRATIC_REPUBLIC', 'CONGO_REPUBLIC', 'COSTA_RICA', 'CROATIA', 'CUBA', 'CYPRUS', 'CZECH_REPUBLIC', 'DENMARK', 'DJIBOUTI', 'DOMINICA', 'DOMINICAN_REPUBLIC', 'EAST_TIMOR', 'ECUADOR', 'EGYPT', 'EL_SALVADOR', 'EQUATORIAL_GUINEA', 'ERITREA', 'ESTONIA', 'ESWATINI', 'ETHIOPIA', 'FIJI', 'FINLAND', 'FRANCE', 'GABON', 'GAMBIA', 'GEORGIA', 'GERMANY', 'GHANA', 'GREECE', 'GRENADA', 'GUATEMALA', 'GUINEA', 'GUINEA_BISSAU', 'GUYANA', 'HAITI', 'HONDURAS', 'HUNGARY', 'ICELAND', 'INDIA', 'INDONESIA', 'IRAN', 'IRAQ', 'IRELAND', 'ISRAEL', 'ITALY', 'IVORY_COAST', 'JAMAICA', 'JAPAN', 'JORDAN', 'KAZAKHSTAN', 'KENYA', 'KIRIBATI', 'KOSOVO', 'KUWAIT', 'KYRGYZSTAN', 'LAOS', 'LATVIA', 'LEBANON', 'LESOTHO', 'LIBERIA', 'LIBYA', 'LIECHTENSTEIN', 'LITHUANIA', 'LUXEMBOURG', 'MADAGASCAR', 'MALAWI', 'MALAYSIA', 'MALDIVES', 'MALI', 'MALTA', 'MARSHALL_ISLANDS', 'MAURITANIA', 'MAURITIUS', 'MEXICO', 'MICRONESIA', 'MOLDOVA', 'MONACO', 'MONGOLIA', 'MONTENEGRO', 'MOROCCO', 'MOZAMBIQUE', 'MYANMAR', 'NAMIBIA', 'NAURU', 'NEPAL', 'NETHERLANDS', 'NEW_ZEALAND', 'NICARAGUA', 'NIGER', 'NIGERIA', 'NORTH_KOREA', 'NORTH_MACEDONIA', 'NORWAY', 'OMAN', 'PAKISTAN', 'PALAU', 'PALESTINE', 'PANAMA', 'PAPUA_NEW_GUINEA', 'PARAGUAY', 'PERU', 'PHILIPPINES', 'POLAND', 'PORTUGAL', 'QATAR', 'ROMANIA', 'RUSSIA', 'RWANDA', 'SAINT_KITTS_AND_NEVIS', 'SAINT_LUCIA', 'SAINT_VINCENT_AND_THE_GRENADINES', 'SAMOA', 'SAN_MARINO', 'SAO_TOME_AND_PRINCIPE', 'SAUDI_ARABIA', 'SENEGAL', 'SERBIA', 'SEYCHELLES', 'SIERRA_LEONE', 'SINGAPORE', 'SLOVAKIA', 'SLOVENIA', 'SOLOMON_ISLANDS', 'SOMALIA', 'SOUTH_AFRICA', 'SOUTH_KOREA', 'SOUTH_SUDAN', 'SPAIN', 'SRI_LANKA', 'SUDAN', 'SURINAME', 'SWEDEN', 'SWITZERLAND', 'SYRIA', 'TAIWAN', 'TAJIKISTAN', 'TANZANIA', 'THAILAND', 'TOGO', 'TONGA', 'TRINIDAD_AND_TOBAGO', 'TUNISIA', 'TURKEY', 'TURKMENISTAN', 'TUVALU', 'UGANDA', 'UKRAINE', 'UNITED_ARAB_EMIRATES', 'UNITED_KINGDOM', 'UNITED_STATES', 'URUGUAY', 'UZBEKISTAN', 'VANUATU', 'VATICAN_CITY', 'VENEZUELA', 'VIETNAM', 'YEMEN', 'ZAMBIA', 'ZIMBABWE');
+
+-- AlterTable
+ALTER TABLE "User" DROP COLUMN "nationality",
+ADD COLUMN     "nationality" "CountriesOptions" NOT NULL DEFAULT 'NOT_SPECIEFIED',
+DROP COLUMN "citzenship",
+ADD COLUMN     "citzenship" "CountriesOptions" NOT NULL DEFAULT 'NOT_SPECIEFIED';
+
+-- AlterTable
+ALTER TABLE "UserAthleteProfile" DROP COLUMN "birth_country",
+ADD COLUMN     "birth_country" "CountriesOptions" NOT NULL DEFAULT 'NOT_SPECIEFIED';
+
+-- DropEnum
+DROP TYPE "NationalityOptions";
+
+// File: prisma/migrations/20240603201824_updates/migration.sql
+/*
+  Warnings:
+
+  - You are about to drop the `User` table. If the table is not empty, all the data it contains will be lost.
+  - A unique constraint covering the columns `[profile_id]` on the table `UserAthleteProfile` will be added. If there are existing duplicate values, this will fail.
+  - A unique constraint covering the columns `[profile_id]` on the table `UserScoutProfile` will be added. If there are existing duplicate values, this will fail.
+  - Added the required column `profile_id` to the `UserAthleteProfile` table without a default value. This is not possible if the table is not empty.
+  - Added the required column `profile_id` to the `UserScoutProfile` table without a default value. This is not possible if the table is not empty.
+
+*/
+-- DropForeignKey
+ALTER TABLE "User" DROP CONSTRAINT "User_sport_id_fkey";
+
+-- AlterTable
+ALTER TABLE "UserAthleteProfile" ADD COLUMN     "profile_id" INTEGER NOT NULL;
+
+-- AlterTable
+ALTER TABLE "UserScoutProfile" ADD COLUMN     "profile_id" INTEGER NOT NULL;
+
+-- DropTable
+DROP TABLE "User";
+
+-- CreateTable
+CREATE TABLE "Profiles" (
+    "id" SERIAL NOT NULL,
+    "public_id" TEXT NOT NULL,
+    "first_name" TEXT NOT NULL,
+    "last_name" TEXT NOT NULL,
+    "age" INTEGER NOT NULL,
+    "email" TEXT NOT NULL,
+    "sex" "UserSexOptions" NOT NULL DEFAULT 'NOT_SPECIEFIED',
+    "birt_date" TIMESTAMP(3) NOT NULL,
+    "account_status" "UserAccountStatusOptions" NOT NULL DEFAULT 'INATIVE',
+    "nationality" "CountriesOptions" NOT NULL DEFAULT 'NOT_SPECIEFIED',
+    "citzenship" "CountriesOptions" NOT NULL DEFAULT 'NOT_SPECIEFIED',
+    "sport_id" INTEGER,
+    "phone" TEXT,
+    "mobile" TEXT,
+    "address" TEXT,
+
+    CONSTRAINT "Profiles_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Profiles_public_id_key" ON "Profiles"("public_id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "UserAthleteProfile_profile_id_key" ON "UserAthleteProfile"("profile_id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "UserScoutProfile_profile_id_key" ON "UserScoutProfile"("profile_id");
+
+-- AddForeignKey
+ALTER TABLE "Profiles" ADD CONSTRAINT "Profiles_sport_id_fkey" FOREIGN KEY ("sport_id") REFERENCES "Sports"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "UserAthleteProfile" ADD CONSTRAINT "UserAthleteProfile_profile_id_fkey" FOREIGN KEY ("profile_id") REFERENCES "Profiles"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "UserScoutProfile" ADD CONSTRAINT "UserScoutProfile_profile_id_fkey" FOREIGN KEY ("profile_id") REFERENCES "Profiles"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+// File: prisma/migrations/20240604064346_init/migration.sql
+/*
+  Warnings:
+
+  - You are about to drop the column `age` on the `Profiles` table. All the data in the column will be lost.
+  - Added the required column `age` to the `UserAthleteProfile` table without a default value. This is not possible if the table is not empty.
+
+*/
+-- AlterTable
+ALTER TABLE "Profiles" DROP COLUMN "age";
+
+-- AlterTable
+ALTER TABLE "UserAthleteProfile" ADD COLUMN     "age" INTEGER NOT NULL;
+
+// File: prisma/migrations/20240605200354_remove_adress_mobile_and_phone/migration.sql
+/*
+  Warnings:
+
+  - You are about to drop the column `address` on the `UserAthleteProfile` table. All the data in the column will be lost.
+  - You are about to drop the column `mobile` on the `UserAthleteProfile` table. All the data in the column will be lost.
+  - You are about to drop the column `phone` on the `UserAthleteProfile` table. All the data in the column will be lost.
+  - You are about to drop the column `address` on the `UserScoutProfile` table. All the data in the column will be lost.
+  - You are about to drop the column `mobile` on the `UserScoutProfile` table. All the data in the column will be lost.
+  - You are about to drop the column `phone` on the `UserScoutProfile` table. All the data in the column will be lost.
+
+*/
+-- AlterTable
+ALTER TABLE "UserAthleteProfile" DROP COLUMN "address",
+DROP COLUMN "mobile",
+DROP COLUMN "phone";
+
+-- AlterTable
+ALTER TABLE "UserScoutProfile" DROP COLUMN "address",
+DROP COLUMN "mobile",
+DROP COLUMN "phone";
+
+// File: prisma/migrations/20240605201822_changed_sport_id_to_mandatory/migration.sql
+/*
+  Warnings:
+
+  - Made the column `sport_id` on table `Profiles` required. This step will fail if there are existing NULL values in that column.
+
+*/
+-- DropForeignKey
+ALTER TABLE "Profiles" DROP CONSTRAINT "Profiles_sport_id_fkey";
+
+-- AlterTable
+ALTER TABLE "Profiles" ALTER COLUMN "sport_id" SET NOT NULL;
+
+-- AddForeignKey
+ALTER TABLE "Profiles" ADD CONSTRAINT "Profiles_sport_id_fkey" FOREIGN KEY ("sport_id") REFERENCES "Sports"("id") ON DELETE NO ACTION ON UPDATE CASCADE;
+
+// File: prisma/migrations/20240605203146_changed_user_scout_logic/migration.sql
+-- AlterTable
+ALTER TABLE "UserScoutProfile" ALTER COLUMN "organization_id" DROP NOT NULL;
+
+// File: prisma/migrations/20240605203415_birth_country_and_citzenship/migration.sql
+/*
+  Warnings:
+
+  - You are about to drop the column `citzenship` on the `Profiles` table. All the data in the column will be lost.
+  - You are about to drop the column `birth_country` on the `UserAthleteProfile` table. All the data in the column will be lost.
+
+*/
+-- AlterTable
+ALTER TABLE "Profiles" DROP COLUMN "citzenship";
+
+-- AlterTable
+ALTER TABLE "UserAthleteProfile" DROP COLUMN "birth_country";
+
+// File: prisma/migrations/migration_lock.toml
+# Please do not edit this file manually
+# It should be added in your version-control system (i.e. Git)
+provider = "postgresql"
 // File: prisma/schema.prisma
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
@@ -503,91 +1395,343 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
-model User {
-  id              String            @id @default(uuid())
-  email           String            @unique
-  password        String
-  userPreferences UserPreferences[]
-  files           Files[]
-  prompts         Prompts[]
-  workflow        Workflows[]
-  analytics       Analytics?
+model Profiles {
+  id             Int                      @id @default(autoincrement())
+  public_id      String                   @unique @default(uuid())
+  first_name     String
+  last_name      String
+  email          String
+  sex            UserSexOptions           @default(NOT_SPECIEFIED)
+  birt_date      DateTime
+  account_status UserAccountStatusOptions @default(INATIVE)
+  nationality    CountriesOptions         @default(NOT_SPECIEFIED)
+  sport_id       Int
+  phone          String?
+  mobile         String?
+  address        String?
+  sport          Sports?                  @relation(fields: [sport_id], references: [id], onDelete: NoAction)
+  athlete        UserAthleteProfile?
+  scout          UserScoutProfile?
 }
 
-model UserPreferences {
-  id     String @id @default(uuid())
-  userId String @unique
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  key    String
-  value  String
+model UserAthleteProfile {
+  id             Int                  @id @default(autoincrement())
+  profile_id     Int                  @unique
+  profile        Profiles             @relation(fields: [profile_id], references: [id], onDelete: Cascade)
+  citzenship     String
+  age            Int
+  height         Float
+  height_metric  HeightOptions        @default(CM)
+  weight         Float
+  weight_metric  WeightOptions        @default(KG)
+  status         AthleteStatusOptions @default(NOT_SPECIEFIED)
+  leagues_played String?
+  guardians      UserGuardian[]
+  appointmenst   UserAppointments[]
 }
 
-model WorkflowPreferences {
-  id         String    @id @default(uuid())
-  workflowId String    @unique
-  workflow   Workflows @relation(fields: [workflowId], references: [id], onDelete: Cascade)
-  key        String
-  value      String
+model UserScoutProfile {
+  id              Int                @id @default(autoincrement())
+  profile_id      Int                @unique
+  profile         Profiles           @relation(fields: [profile_id], references: [id], onDelete: Cascade)
+  organization_id Int?
+  organization    UserOrganization?
+  affiliations    String[]
+  appointmenst    UserAppointments[]
 }
 
-model Files {
-  id       String   @id @default(uuid())
-  userId   String   @unique
-  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  url      String
-  fileName String
-  type     fileType
+model UserGuardian {
+  id           Int                @id @default(autoincrement())
+  name         String
+  relationship String
+  profile_id   Int
+  profile      UserAthleteProfile @relation(fields: [profile_id], references: [id], onDelete: Cascade)
+  concent_form String
 }
 
-model Prompts {
-  id              String            @id @default(uuid())
-  userId          String
-  user            User              @relation(fields: [userId], references: [id], onDelete: Cascade)
-  prompt          String
-  processedPrompt ProcessedPrompts?
+model Sports {
+  id        Int                @id @default(autoincrement())
+  public_id String             @unique @default(uuid())
+  name      String
+  attibutes SportsAttributes[]
+  user      Profiles[]
 }
 
-model Analytics {
-  id     String @id @default(uuid())
-  userId String @unique
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+model SportsAttributes {
+  id       Int    @id @default(autoincrement())
+  name     String
+  sport_id Int
+  sport    Sports @relation(fields: [sport_id], references: [id], onDelete: Cascade)
 }
 
-model Workflows {
-  id                  String                @id @default(uuid())
-  userId              String                @unique
-  user                User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
-  name                String
-  description         String
-  metadata            Json
-  workflowPreferences WorkflowPreferences[]
-  workflowLogs        WorkflowLogs[]
-  createdAt           DateTime              @default(now())
-  updatedAt           DateTime              @updatedAt
+model UserOrganization {
+  id           Int              @id @default(autoincrement())
+  public_id    String           @unique @default(uuid())
+  name         String
+  email        String
+  phone        String?
+  mobile       String?
+  document_url String
+  profile_id   Int              @unique
+  profile      UserScoutProfile @relation(fields: [profile_id], references: [id], onDelete: Cascade)
 }
 
-model ProcessedPrompts {
-  id              String  @id @default(uuid())
-  promptId        String  @unique
-  prompt          Prompts @relation(fields: [promptId], references: [id], onDelete: Cascade)
-  processedPrompt String
+model UserMedia {
+  id        Int          @id @default(autoincrement())
+  public_id String       @unique @default(uuid())
+  name      String
+  type      MediaOptions
+  media_url String
 }
 
-model WorkflowLogs {
-  id         String    @id @default(uuid())
-  timestamp  DateTime
-  workflowId String    @unique
-  workflow   Workflows @relation(fields: [workflowId], references: [id], onDelete: Cascade)
-  key        String
-  value      String
+model UserAppointments {
+  athlete_id  Int
+  scout_id    Int
+  title       String
+  description String
+  duration    String
+  scheduled   DateTime
+  athlete     UserAthleteProfile @relation(fields: [athlete_id], references: [id], onDelete: Cascade)
+  scout       UserScoutProfile   @relation(fields: [scout_id], references: [id], onDelete: Cascade)
+
+  @@id([athlete_id, scout_id])
 }
 
-enum fileType {
-  PDF
-  DOCX
+enum UserSexOptions {
+  NOT_SPECIEFIED
+  MALE
+  FEMALE
+}
+
+enum CountriesOptions {
+  NOT_SPECIEFIED
+  AFGHANISTAN
+  ALBANIA
+  ALGERIA
+  ANDORRA
+  ANGOLA
+  ANTIGUA_AND_BARBUDA
+  ARGENTINA
+  ARMENIA
+  AUSTRALIA
+  AUSTRIA
+  AZERBAIJAN
+  BAHAMAS
+  BAHRAIN
+  BANGLADESH
+  BARBADOS
+  BELARUS
+  BELGIUM
+  BELIZE
+  BENIN
+  BHUTAN
+  BOLIVIA
+  BOSNIA_AND_HERZEGOVINA
+  BOTSWANA
+  BRAZIL
+  BRUNEI
+  BULGARIA
+  BURKINA_FASO
+  BURUNDI
+  CABO_VERDE
+  CAMBODIA
+  CAMEROON
+  CANADA
+  CENTRAL_AFRICAN_REPUBLIC
+  CHAD
+  CHILE
+  CHINA
+  COLOMBIA
+  COMOROS
+  CONGO_DEMOCRATIC_REPUBLIC
+  CONGO_REPUBLIC
+  COSTA_RICA
+  CROATIA
+  CUBA
+  CYPRUS
+  CZECH_REPUBLIC
+  DENMARK
+  DJIBOUTI
+  DOMINICA
+  DOMINICAN_REPUBLIC
+  EAST_TIMOR
+  ECUADOR
+  EGYPT
+  EL_SALVADOR
+  EQUATORIAL_GUINEA
+  ERITREA
+  ESTONIA
+  ESWATINI
+  ETHIOPIA
+  FIJI
+  FINLAND
+  FRANCE
+  GABON
+  GAMBIA
+  GEORGIA
+  GERMANY
+  GHANA
+  GREECE
+  GRENADA
+  GUATEMALA
+  GUINEA
+  GUINEA_BISSAU
+  GUYANA
+  HAITI
+  HONDURAS
+  HUNGARY
+  ICELAND
+  INDIA
+  INDONESIA
+  IRAN
+  IRAQ
+  IRELAND
+  ISRAEL
+  ITALY
+  IVORY_COAST
+  JAMAICA
+  JAPAN
+  JORDAN
+  KAZAKHSTAN
+  KENYA
+  KIRIBATI
+  KOSOVO
+  KUWAIT
+  KYRGYZSTAN
+  LAOS
+  LATVIA
+  LEBANON
+  LESOTHO
+  LIBERIA
+  LIBYA
+  LIECHTENSTEIN
+  LITHUANIA
+  LUXEMBOURG
+  MADAGASCAR
+  MALAWI
+  MALAYSIA
+  MALDIVES
+  MALI
+  MALTA
+  MARSHALL_ISLANDS
+  MAURITANIA
+  MAURITIUS
+  MEXICO
+  MICRONESIA
+  MOLDOVA
+  MONACO
+  MONGOLIA
+  MONTENEGRO
+  MOROCCO
+  MOZAMBIQUE
+  MYANMAR
+  NAMIBIA
+  NAURU
+  NEPAL
+  NETHERLANDS
+  NEW_ZEALAND
+  NICARAGUA
+  NIGER
+  NIGERIA
+  NORTH_KOREA
+  NORTH_MACEDONIA
+  NORWAY
+  OMAN
+  PAKISTAN
+  PALAU
+  PALESTINE
+  PANAMA
+  PAPUA_NEW_GUINEA
+  PARAGUAY
+  PERU
+  PHILIPPINES
+  POLAND
+  PORTUGAL
+  QATAR
+  ROMANIA
+  RUSSIA
+  RWANDA
+  SAINT_KITTS_AND_NEVIS
+  SAINT_LUCIA
+  SAINT_VINCENT_AND_THE_GRENADINES
+  SAMOA
+  SAN_MARINO
+  SAO_TOME_AND_PRINCIPE
+  SAUDI_ARABIA
+  SENEGAL
+  SERBIA
+  SEYCHELLES
+  SIERRA_LEONE
+  SINGAPORE
+  SLOVAKIA
+  SLOVENIA
+  SOLOMON_ISLANDS
+  SOMALIA
+  SOUTH_AFRICA
+  SOUTH_KOREA
+  SOUTH_SUDAN
+  SPAIN
+  SRI_LANKA
+  SUDAN
+  SURINAME
+  SWEDEN
+  SWITZERLAND
+  SYRIA
+  TAIWAN
+  TAJIKISTAN
+  TANZANIA
+  THAILAND
+  TOGO
+  TONGA
+  TRINIDAD_AND_TOBAGO
+  TUNISIA
+  TURKEY
+  TURKMENISTAN
+  TUVALU
+  UGANDA
+  UKRAINE
+  UNITED_ARAB_EMIRATES
+  UNITED_KINGDOM
+  UNITED_STATES
+  URUGUAY
+  UZBEKISTAN
+  VANUATU
+  VATICAN_CITY
+  VENEZUELA
+  VIETNAM
+  YEMEN
+  ZAMBIA
+  ZIMBABWE
+}
+
+enum MediaOptions {
+  VIDEO
+  IMAGE
+}
+
+enum HeightOptions {
+  CM
+  FT
+}
+
+enum WeightOptions {
+  KG
+  LB
+}
+
+enum AthleteStatusOptions {
+  NOT_SPECIEFIED
+  PROFESSIONAL
+  AMATEUR
+}
+
+enum UserAccountStatusOptions {
+  ACTIVE
+  INATIVE
 }
 

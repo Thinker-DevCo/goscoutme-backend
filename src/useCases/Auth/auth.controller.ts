@@ -3,7 +3,6 @@ import { NextFunction, Request, Response } from "express";
 import { ICreateAuthDto, UpdateAuthDto } from "./dto";
 import { AuthUseCase } from "./auth.service";
 import { ISignIn } from "./dto/CreateAuth.dto";
-import { Secure } from "../../decorators/Security.decorator";
 import { Token } from "../../decorators/token.decorator";
 
 @Controller('auth', '1')
@@ -30,7 +29,7 @@ export class AuthController {
 
 
  
-  @Secure()
+
   @Get("/refresh_token")
   async handleRefreshToken(request: Request<{id: string}>, response: Response,next: NextFunction, @Token() token: string) {
     try{

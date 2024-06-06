@@ -1,16 +1,34 @@
-import { Request, Response, NextFunction } from "express";
-import { supabase } from "../providers/supabase/supabase";
-import { BaseError, HttpStatusCode } from "../providers/errorProvider";
+// File: src/decorators/authDecorator.ts
 
-export function Secure(): MethodDecorator {
-    return (target, propertyKey) => {
-        const originalMethod = target[propertyKey];
-        target[propertyKey] = async function (req: Request, res: Response, next: NextFunction) {
-            const accessToken = req.headers.authorization?.split(' ')[1];
-            const user=await supabase.auth.getUser(accessToken);
-            
-            if(!user.data.user) throw new BaseError('FORBIDDEN', HttpStatusCode.FORBIDDEN, false, 'User UnAuthenticated')
-            return originalMethod.apply(this, [req, res, next]);
-        };
+import { NextFunction, Request, RequestHandler, Response } from 'express';
+import { isAuthenticated } from '../middlewares/authMiddleware';
+
+
+export function Authenticated(): MethodDecorator {
+  return function (target: any, propertyKey: string | symbol, descriptor: PropertyDescriptor) {
+    const originalMethod = descriptor.value;
+
+    descriptor.value = async function (...args: any[]) {
+      const req = args[0] as Request;
+      const res = args[1] as Response;
+      const next = args[2] as NextFunction;
+
+      try {
+        await new Promise<void>((resolve, reject) => {
+          isAuthenticated(req, res, (err: any) => {
+            if (err) {
+              reject(err);
+            } else {
+              resolve();
+            }
+          });
+        });
+        return originalMethod.apply(this, args);
+      } catch (err) {
+        next(err);
+      }
     };
+
+    return descriptor;
+  };
 }
