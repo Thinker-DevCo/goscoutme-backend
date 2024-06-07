@@ -27,7 +27,7 @@ class ProfileUseCase {
       }
     })
     if(dto.userType === 'ATHLETE'){
-      const ahtlete = await this.prisma.client.userAthleteProfile.create({
+      const athlete = await this.prisma.client.userAthleteProfile.create({
         data: {
           age: dto.age,
           height: dto.height,
@@ -40,7 +40,7 @@ class ProfileUseCase {
       })
       return{
         profile: profile,
-        ahtlete: ahtlete
+        athlete: athlete
       }
     }else {
       const scout = await this.prisma.client.userScoutProfile.create({
