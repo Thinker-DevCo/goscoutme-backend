@@ -88,11 +88,11 @@ class ProfileUseCase {
       profile: {},
     };
 
-    if (params.sex) whereClause.profile.sex = params.sex;
+    if (params.sex !== undefined) whereClause.profile.sex = params.sex;
     if (params.ageMin !== undefined) whereClause.age = { gte: params.ageMin };
     if (params.ageMax !== undefined) whereClause.age = { lte: params.ageMax };
-    if (params.status) whereClause.status = params.status;
-    if (params.country) whereClause.profile.nationality = params.country;
+    if (params.status !== undefined) whereClause.status = params.status;
+    if (params.country !== undefined) whereClause.profile.nationality = params.country;
 
     const athletes = await this.prisma.client.userAthleteProfile.findMany({
       skip: params.page * params.items,

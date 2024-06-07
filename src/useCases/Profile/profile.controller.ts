@@ -69,7 +69,7 @@ export class ProfileController {
   async handleUpdateProfile(request: Request<{id: string}, {}, UpdateProfileDto>, response: Response) {
     const user = request.user
     const data = await new ProfileUseCase().executeUpdateProfile(user.data.user.id, request.body )
-    return response.json({ message: "Update profile" });
+    return response.json(data);
   }
 
 }
