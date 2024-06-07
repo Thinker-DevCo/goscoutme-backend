@@ -19,9 +19,15 @@ class ProfileUseCase {
         email: dto.email,
         birt_date: new Date(dto.birt_date).toISOString(),
         sex: dto.sex,
+        affiliations: dto.affiliations || null,
         address: dto.address ? dto.address : null,
         mobile: dto.mobile ? dto.mobile : null,
         phone: dto.phone ? dto.phone : null,
+        organization: {
+          create: {
+            ...dto
+          }
+        },
         nationality: dto.nationality,
         public_id: dto.public_id,
         sport_id: dto.sport_id,
@@ -37,6 +43,15 @@ class ProfileUseCase {
           citzenship: dto.citzenship,
           height_metric: dto.height_metric,
           weight_metric: dto.weight_metric,
+          career_statistics: {
+            create: {
+              game_appearances: dto.game_appearances || 0,
+              minutes_played: dto.minutes_played || 0,
+              field_goals: dto.field_goals || 0,
+              game_started: dto.game_started || 0,
+            }
+          },
+          sport_position_id: dto.sport_position_id,
           status: dto.status || AthleteStatusOptions.NOT_SPECIEFIED,
         }
       })
@@ -48,8 +63,6 @@ class ProfileUseCase {
       const scout = await this.prisma.client.userScoutProfile.create({
         data: {
           profile_id: profile.id,
-          affiliations: dto.affiliations,
-          organization_id: dto.organization_id,
         }
       })
       return{
@@ -131,7 +144,7 @@ class ProfileUseCase {
     if(!dto.userType ) throw new BaseError('BAD REQUEST', HttpStatusCode.BAD_REQUEST, false, 'Error creating profile')
     if(dto.userType === 'ATHLETE' ){
       if(!dto.height || !dto.height || !dto.weight || !dto.weight_metric 
-        || !dto.citzenship || !dto.status || !dto.age 
+        || !dto.citzenship || !dto.status || !dto.age  || !dto.sport_position_id
        )throw new BaseError('BAD REQUEST', HttpStatusCode.BAD_REQUEST, false, 'could not create athlete profile ')
        return;
      }
