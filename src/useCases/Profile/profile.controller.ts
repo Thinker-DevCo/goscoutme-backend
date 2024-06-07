@@ -20,7 +20,7 @@ export class ProfileController {
     }
   }
   
-  @Get("/find_athlete")
+  @Get("/get_athletes")
   @Authenticated()
   async handleFilterAthletes(request: Request, response: Response, next: NextFunction) {
     try {
@@ -40,7 +40,7 @@ export class ProfileController {
     }
   }
 
-  @Get("/get_athletes")
+  @Get("/get_all_athletes")
   @Authenticated()
   async handleReadAthletes(request: Request, response: Response, next: NextFunction) {
     try{
