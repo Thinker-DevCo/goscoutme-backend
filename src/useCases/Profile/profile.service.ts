@@ -1,3 +1,4 @@
+import { AthleteStatusOptions } from "@prisma/client";
 import { BaseError, HttpStatusCode } from "../../providers/errorProvider";
 import { PrismaService } from "../../providers/prisma/prismaClient";
 import { ICreateProfileDto, UpdateProfileDto } from "./dto";
@@ -35,7 +36,8 @@ class ProfileUseCase {
           profile_id: profile.id,
           citzenship: dto.citzenship,
           height_metric: dto.height_metric,
-          weight_metric: dto.weight_metric
+          weight_metric: dto.weight_metric,
+          status: dto.status || AthleteStatusOptions.NOT_SPECIEFIED,
         }
       })
       return{
