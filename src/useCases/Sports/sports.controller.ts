@@ -10,15 +10,11 @@ export class SportsController {
   @Get("/get_sports_position")
   async handleReadSports(request: Request, response: Response, next: NextFunction) {
     try{
-      const {sport_id} = request.params
+      const {sport_id} = request.query
       return new SportsUseCase().executeReadSportsPositions(Number(sport_id))
     }catch(err){
       next(err)
     }
 
   }
-
-
-
-
 }
