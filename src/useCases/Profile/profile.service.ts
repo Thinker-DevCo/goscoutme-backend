@@ -107,6 +107,7 @@ class ProfileUseCase {
 
   async filterAthletes(params: IFilterAthletesParams) {
     const whereClause: any = {
+      profile: {}
     };
 
     if (params.sex !== undefined) whereClause.profile.sex = params.sex;
@@ -118,7 +119,7 @@ class ProfileUseCase {
     const athletes = await this.prisma.client.userAthleteProfile.findMany({
       skip: params.page * params.items,
       take: params.items,
-      where: whereClause,
+      where: Object.keys(whereClause).length > 0 ? whereClause : undefined,
       include: {
         profile: true,
         sport_position: true
