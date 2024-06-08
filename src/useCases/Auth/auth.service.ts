@@ -37,6 +37,8 @@ class AuthUseCase {
     const user_profile = await this.prisma.client.profiles.findUnique({
       include: {
         sport: true,
+        athlete: true,
+        scout: true
       },
       where: {
         public_id: user.data.user.id
