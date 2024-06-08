@@ -17,7 +17,7 @@ class ProfileUseCase {
         first_name: dto.first_name,
         last_name: dto.last_name,
         email: dto.email,
-        birt_date: new Date(dto.birt_date).toISOString(),
+        birth_date: new Date(dto.birth_date).toISOString(),
         sex: dto.sex,
         affiliations: dto.affiliations || null,
         address: dto.address ? dto.address : null,

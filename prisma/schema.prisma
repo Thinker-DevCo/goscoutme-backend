@@ -21,7 +21,7 @@ model Profiles {
   last_name      String
   email          String
   sex            UserSexOptions           @default(NOT_SPECIEFIED)
-  birt_date      DateTime
+  birth_date     DateTime
   account_status UserAccountStatusOptions @default(INATIVE)
   nationality    CountriesOptions         @default(NOT_SPECIEFIED)
   sport_id       Int
