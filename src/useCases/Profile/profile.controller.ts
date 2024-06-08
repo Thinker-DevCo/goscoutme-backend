@@ -27,7 +27,7 @@ export class ProfileController {
       const { sex, ageMin, ageMax, status, country, page, items, position } = request.query;
       const data = await new ProfileUseCase().filterAthletes({
         sex: sex as UserSexOptions,
-        positions: [Number(position)],
+        position: Number(position),
         ageMin: parseInt(ageMin as string),
         ageMax: parseInt(ageMax as string),
         status: status as AthleteStatusOptions,

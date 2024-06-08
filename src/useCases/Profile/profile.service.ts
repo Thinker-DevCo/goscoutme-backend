@@ -112,7 +112,7 @@ class ProfileUseCase {
     const whereClause: any = {
       profile: {}
     };
-    if(params.positions && params.positions.length > 0) whereClause.sport_position_id =    whereClause.sport_position_id = { in: params.positions };
+    if(params.position !== undefined) whereClause.sport_position_id = params.position
     if (params.sex !== undefined) whereClause.profile.sex = params.sex;
     if (params.ageMin ) whereClause.age = { gte: params.ageMin };
     if (params.ageMax) whereClause.age = { lte: params.ageMax };
