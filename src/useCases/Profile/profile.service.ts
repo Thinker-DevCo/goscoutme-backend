@@ -120,6 +120,7 @@ class ProfileUseCase {
       where: whereClause,
       include: {
         profile: true,
+        sport_position: true
       },
     });
 
