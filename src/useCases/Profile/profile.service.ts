@@ -82,6 +82,7 @@ class ProfileUseCase {
       take: items,
       include: {
         profile: true,
+        sport_position: true
       }
     })
     if(!athlete) throw new BaseError('NOT FOUND',404, false,'there are no athlete users in the database')
