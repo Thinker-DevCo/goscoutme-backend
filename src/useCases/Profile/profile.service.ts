@@ -13,6 +13,9 @@ class ProfileUseCase {
   async executeCreateProfile(dto: ICreateProfileDto) {
     await this.validateUser(dto)
     const profile = await this.prisma.client.profiles.create({
+      include: {
+        sport: true
+      },
       data: {
         first_name: dto.first_name,
         last_name: dto.last_name,
@@ -109,7 +112,7 @@ class ProfileUseCase {
     const whereClause: any = {
       profile: {}
     };
-
+    if(params.position !== undefined) whereClause
     if (params.sex !== undefined) whereClause.profile.sex = params.sex;
     if (params.ageMin ) whereClause.age = { gte: params.ageMin };
     if (params.ageMax) whereClause.age = { lte: params.ageMax };
