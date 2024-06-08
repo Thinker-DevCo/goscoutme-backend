@@ -148,7 +148,7 @@ class ProfileUseCase {
   private async validateUser(dto: ICreateProfileDto){
     if(!dto.userType ) throw new BaseError('BAD REQUEST', HttpStatusCode.BAD_REQUEST, false, 'Error creating profile')
     if(dto.userType === 'ATHLETE' ){
-      if(!dto.height || !dto.height_metric || !dto.weight || !dto.weight_metric 
+      if(!dto.height || !dto.height|| !dto.weight || !dto.weight_metric 
         || !dto.citzenship || !dto.status || !dto.age  || !dto.sport_position_id
        )throw new BaseError('BAD REQUEST', HttpStatusCode.BAD_REQUEST, false, 'could not create athlete profile ')
        return;
