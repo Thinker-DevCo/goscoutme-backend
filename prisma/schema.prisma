@@ -39,7 +39,7 @@ model UserAthleteProfile {
   id                Int                    @id @default(autoincrement())
   profile_id        Int                    @unique
   profile           Profiles               @relation(fields: [profile_id], references: [id], onDelete: Cascade)
-  citzenship        String?
+  citzenship        CountriesOptions[]     @default([NOT_SPECIEFIED])
   age               Int
   height            Float
   height_metric     HeightOptions          @default(CM)
