@@ -20,6 +20,7 @@ class AuthUseCase {
       email: dto.email,
       password: dto.password
     })
+    console.log(user)
     if(user.error) throw new BaseError('FORBIDDEN', HttpStatusCode.FORBIDDEN, true, 'User already exists')
 
 
