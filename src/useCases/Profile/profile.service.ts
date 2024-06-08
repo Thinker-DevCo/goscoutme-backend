@@ -127,7 +127,7 @@ class ProfileUseCase {
         first_name: dto.first_name,
         last_name: dto.last_name,
         email: dto.email,
-        birt_date: dto.birt_date ? new Date(dto.birt_date).toISOString() : undefined,
+        birth_date: dto.birth_date ? new Date(dto.birth_date).toISOString() : undefined,
         sex: dto.sex,
         address: dto.address,
         mobile: dto.mobile,
