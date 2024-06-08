@@ -4,8 +4,9 @@ import { AuthController } from "./useCases/Auth/auth.controller";
 import { AuthRoutes } from "./useCases/Auth/auth.route";
 import { ProfileRoutes } from "./useCases/Profile/profile.route";
 import { SportsRoutes } from "./useCases/Sports/sports.route";
+import { MediaRoutes } from "./useCases/Media/Media.route";
 
-@GlobalRoutes([AuthRoutes, ProfileRoutes, SportsRoutes])
+@GlobalRoutes([AuthRoutes, ProfileRoutes, SportsRoutes, MediaRoutes])
 export class AppGlobalRoutes {
   startModule(app: Express): void {}
 }

@@ -12,6 +12,8 @@
     "generate-swagger": "ts-node ./src/swagger.ts"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.592.0",
+    "@aws-sdk/s3-request-presigner": "^3.592.0",
     "@prisma/client": "^5.12.1",
     "@supabase/supabase-js": "^2.43.4",
     "@types/bcryptjs": "^2.4.6",

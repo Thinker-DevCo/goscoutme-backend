@@ -91,6 +91,7 @@ class ProfileUseCase {
     const athlete = await this.prisma.client.userAthleteProfile.findFirst({
       include: {
         profile: true,
+        media: true  
       },
       where: {
         profile: {

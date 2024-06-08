@@ -49,6 +49,7 @@ model UserAthleteProfile {
   leagues_played    String?
   guardians         UserGuardian[]
   appointmenst      UserAppointments[]
+  media             UserMedia[]
   career_statistics UserCareerStatistics?
   sport_position_id Int?
   league_played     String?
@@ -129,11 +130,12 @@ model UserOrganization {
 }
 
 model UserMedia {
-  id        Int          @id @default(autoincrement())
-  public_id String       @unique @default(uuid())
-  name      String
-  type      MediaOptions
-  media_url String
+  id         Int                @id @default(autoincrement())
+  athlete_id Int
+  athlete    UserAthleteProfile @relation(fields: [athlete_id], references: [id], onDelete: Cascade)
+  name       String
+  type       MediaOptions
+  media_url  String
 }
 
 model UserAppointments {
