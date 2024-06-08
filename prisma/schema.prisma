@@ -23,7 +23,7 @@ model Profiles {
   sex            UserSexOptions           @default(NOT_SPECIEFIED)
   birt_date      DateTime
   account_status UserAccountStatusOptions @default(INATIVE)
-  nationality    CountriesOptions[]       @default([NOT_SPECIEFIED])
+  nationality    CountriesOptions         @default(NOT_SPECIEFIED)
   sport_id       Int
   phone          String?
   mobile         String?
@@ -39,7 +39,7 @@ model UserAthleteProfile {
   id                Int                    @id @default(autoincrement())
   profile_id        Int                    @unique
   profile           Profiles               @relation(fields: [profile_id], references: [id], onDelete: Cascade)
-  citzenship        CountriesOptions[]
+  citzenship        CountriesOptions
   age               Int
   height            Float
   height_metric     HeightOptions          @default(CM)
@@ -79,6 +79,7 @@ model UserSportsAttributes {
 model SportPosition {
   id       Int                  @unique
   sport_id Int
+  sport    Sports               @relation(fields: [sport_id], references: [id])
   name     String
   athlete  UserAthleteProfile[]
 }
@@ -100,11 +101,12 @@ model UserGuardian {
 }
 
 model Sports {
-  id        Int                @id @default(autoincrement())
-  public_id String             @unique @default(uuid())
-  name      String
-  attibutes SportsAttributes[]
-  user      Profiles[]
+  id             Int                @id @default(autoincrement())
+  public_id      String             @unique @default(uuid())
+  name           String
+  attibutes      SportsAttributes[]
+  sport_position SportPosition[]
+  user           Profiles[]
 }
 
 model SportsAttributes {
