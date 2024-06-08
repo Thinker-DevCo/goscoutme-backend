@@ -11,7 +11,8 @@ export class SportsController {
   async handleReadSports(request: Request, response: Response, next: NextFunction) {
     try{
       const {sport_id} = request.query
-      return new SportsUseCase().executeReadSportsPositions(Number(sport_id))
+      const data = await new SportsUseCase().executeReadSportsPositions(Number(sport_id))
+      response.status(200).json(data)
     }catch(err){
       next(err)
     }

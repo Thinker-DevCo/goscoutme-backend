@@ -25,7 +25,11 @@ class ProfileUseCase {
         phone: dto.phone ? dto.phone : null,
         organization: {
           create: {
-            ...dto
+            org_document_url: dto.org_document_url || null,
+            org_email: dto.org_email,
+            org_mobile: dto.org_mobile ||null,
+            org_name: dto.org_name|| null,
+            org_phone: dto.org_phone || null
           }
         },
         nationality: dto.nationality,
