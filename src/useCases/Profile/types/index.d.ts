@@ -1,6 +1,6 @@
 export interface IFilterAthletesParams {
   sex?: UserSexOptions;
-  positions?: string;
+  positions?: string ;
   ageMin?: number;
   ageMax?: number;
   status?: AthleteStatusOptions;

@@ -112,14 +112,16 @@ class ProfileUseCase {
     const whereClause: any = {
       profile: {}
     };
-    // console.log(this.stringToArray(params.positions))
-    // if(params.positions && params.positions.length > 0) whereClause.sport_position_id = whereClause.sport_position_id = { in: params.positions };
-    if (params.sex !== undefined) whereClause.profile.sex = params.sex;
+    const positionQuery = this.stringToNumberArray(params.positions)
+    const sexQuery = this.stringToStringArray(params.sex)
+    const statusQuery = this.stringToStringArray(params.status)
+    const countryQuery = this.stringToStringArray(params.country)
+    if(positionQuery && positionQuery.length > 0) whereClause.sport_position_id = whereClause.sport_position_id = { in: positionQuery};
+    if (sexQuery && sexQuery.length > 0) whereClause.profile.sex = whereClause.profile.sex = {in: sexQuery};
     if (params.ageMin ) whereClause.age = { gte: params.ageMin };
     if (params.ageMax) whereClause.age = { lte: params.ageMax };
-    if (params.status !== undefined) whereClause.status = params.status;
-    if (params.country !== undefined) whereClause.profile.nationality = params.country;
-    console.log(whereClause)
+    if (statusQuery && statusQuery.length > 0) whereClause.status = whereClause.status = {in: statusQuery};
+    if (countryQuery && countryQuery.length > 0) whereClause.profile.nationality = whereClause.profile.nationality = {in: countryQuery};
     const athletes = await this.prisma.client.userAthleteProfile.findMany({
       skip: params.page * params.items,
       take: params.items,
@@ -161,9 +163,26 @@ class ProfileUseCase {
        return;
      }
   }
-  private stringToArray(text: string){
-    const data = text.split(',');
-    const values = [Number(...data)]
+  private stringToNumberArray(text: string){
+    if(!text) return []
+    const data = text.split('_');
+    const values = []
+    for (let i =0; i<= data.length; i++){
+      if(Number(data[i])){
+        values.push(Number(data[i]))
+      }
+    }
+    return values
+  }
+  private stringToStringArray(text: string){
+    if(!text) return []
+    const data = text.split('_');
+    const values = []
+    for (let i =0; i<= data.length; i++){
+      if(data[i]){
+        values.push(data[i])
+      }
+    }
     return values
   }
 }
