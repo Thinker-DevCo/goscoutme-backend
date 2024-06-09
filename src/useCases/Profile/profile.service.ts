@@ -165,7 +165,7 @@ class ProfileUseCase {
   }
   private stringToNumberArray(text: string){
     if(!text) return []
-    const data = text.split('_');
+    const data = text.split('-');
     const values = []
     for (let i =0; i<= data.length; i++){
       if(Number(data[i])){
@@ -176,7 +176,7 @@ class ProfileUseCase {
   }
   private stringToStringArray(text: string){
     if(!text) return []
-    const data = text.split('_');
+    const data = text.split('-');
     const values = []
     for (let i =0; i<= data.length; i++){
       if(data[i]){
