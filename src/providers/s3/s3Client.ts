@@ -7,8 +7,8 @@ export class S3Provider{
     this.client = new S3Client({
       region: 'af-south-1',
       credentials: {
-      accessKeyId: "AKIAZYDEXZIX3D4R7TMI",
-      secretAccessKey: "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"
+      accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+      secretAccessKey: process.env.AWS_SECRET_KEY_ID
     },
 
   })
