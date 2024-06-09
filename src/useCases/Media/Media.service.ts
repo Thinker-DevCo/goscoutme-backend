@@ -26,7 +26,10 @@ class MediaUseCase {
     const file = await this.prisma.client.userMedia.create({
       data: {
         athlete_id: user.id,
-        media_url: `https://goscoutmee.s3.af-south-1.amazonaws.com/${user.id}/${dto.name}`,
+        media_url: `https://goscoutmee.s3.af-south-1.amazonaws.com/${user.id}/${dto.name.replace(
+          / /g,
+          '+',
+        )}`,
         type: dto.type,
         name: dto.name
       }
