@@ -5,7 +5,7 @@ import { HttpStatusCode } from "../../providers/errorProvider";
 import { supabase } from "../../providers/supabase/supabase";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { S3Provider } from "../../providers/s3/s3Client";
-import { PutObjectAclCommand } from "@aws-sdk/client-s3";
+import { PutObjectAclCommand, PutObjectCommand } from "@aws-sdk/client-s3";
 
 class MediaUseCase {
   private readonly prisma: PrismaService
@@ -35,7 +35,7 @@ class MediaUseCase {
   }
 
   async executeCreatePresignedUser(user_id: string, file_name: string, file_type: string){
-    const signedUrl = await getSignedUrl(this.s3.client,new PutObjectAclCommand({
+    const signedUrl = await getSignedUrl(this.s3.r2,new PutObjectCommand({
       Bucket: 'goscoutme',
       Key: `${user_id}/${file_name}`,
       ACL: 'public-read-write'
