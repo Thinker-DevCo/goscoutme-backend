@@ -39,7 +39,7 @@ class MediaUseCase {
       Bucket: 'goscoutme',
       Key: `${user_id}/${file_name}`,
       ACL: 'public-read-write'
-    }))
+    }), {expiresIn: 600})
     return signedUrl
   }
 
