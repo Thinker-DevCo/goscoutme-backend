@@ -16,10 +16,10 @@ datasource db {
 
 model Profiles {
   id             Int                      @id @default(autoincrement())
-  public_id      String                   @unique @default(uuid())
+  public_id      String                   @unique
   first_name     String
   last_name      String
-  email          String
+  email          String                   @unique
   sex            UserSexOptions           @default(NOT_SPECIEFIED)
   birth_date     DateTime
   account_status UserAccountStatusOptions @default(INATIVE)

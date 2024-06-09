@@ -37,7 +37,7 @@ class MediaUseCase {
   async executeCreatePresignedUser(user_id: string, file_name: string, file_type: string){
     const signedUrl = await getSignedUrl(this.s3.client,new PutObjectAclCommand({
       Bucket: 'goscoutme',
-      Key: `${user_id}/${file_name}.${file_type}`,
+      Key: `${user_id}/${file_name}`,
       ACL: 'public-read-write'
     }))
     return signedUrl
