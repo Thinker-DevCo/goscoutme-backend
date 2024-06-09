@@ -116,6 +116,7 @@ class ProfileUseCase {
     const sexQuery = this.stringToStringArray(params.sex)
     const statusQuery = this.stringToStringArray(params.status)
     const countryQuery = this.stringToStringArray(params.country)
+    if(params.id) whereClause.profile.public_id = { contains: params.id}
     if(positionQuery && positionQuery.length > 0) whereClause.sport_position_id = whereClause.sport_position_id = { in: positionQuery};
     if (sexQuery && sexQuery.length > 0) whereClause.profile.sex = whereClause.profile.sex = {in: sexQuery};
     if (params.ageMin ) whereClause.age = { gte: params.ageMin };

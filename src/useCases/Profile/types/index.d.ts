@@ -7,4 +7,5 @@ export interface IFilterAthletesParams {
   country?: CountriesOptions;
   page: number;
   items?: number;
+  id?: string
 }

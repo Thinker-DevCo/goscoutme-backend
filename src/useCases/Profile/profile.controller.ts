@@ -24,9 +24,10 @@ export class ProfileController {
   @Authenticated()
   async handleFilterAthletes(request: Request, response: Response, next: NextFunction) {
     try {
-      const { sex, ageMin, ageMax, status, country, page, items, position } = request.query;
+      const { sex, ageMin, ageMax, status, country, page, items, position, id } = request.query;
       const data = await new ProfileUseCase().filterAthletes({
         sex: sex as UserSexOptions,
+        id: id as string,
         positions: position as string,
         ageMin: parseInt(ageMin as string),
         ageMax: parseInt(ageMax as string),
