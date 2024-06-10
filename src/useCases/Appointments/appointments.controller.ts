@@ -7,7 +7,7 @@ import { AppointmentsUseCase } from "./appointments.service";
 @Controller('/appointments', '1')
 export class AppointmentsController {
   @Authenticated()
-  @Post("")
+  @Post("/create")
   async handleCreateappointments(request: Request<{}, {}, CreateAppointmentsDto>, response: Response, next: NextFunction) {
     try{  
       const user = request.user.data.user.id
@@ -19,10 +19,15 @@ export class AppointmentsController {
   }
 
   @Authenticated()
-  @Get("")
-  async handleReadAppointments(request: Request, response: Response) {
-    // Handle reading a resource
-    return response.json({ message: "Read appointments" });
+  @Get("/get_user_appointments")
+  async handleReadAppointments(request: Request, response: Response, next: NextFunction) {
+    try{  
+      const user = request.user.data.user.id
+      const data = await new AppointmentsUseCase().executeReadAppointments(user)
+      return response.status(200).json(data)
+    }catch(err){
+      next(err)
+    }
   }
 
   @Put("/:id")
