@@ -148,16 +148,7 @@ class ProfileUseCase {
     const profile = await this.prisma.client.profiles.update({
       where: { public_id: id },
       data: {
-        first_name: dto.first_name,
-        last_name: dto.last_name,
-        email: dto.email,
-        birth_date: dto.birth_date ? new Date(dto.birth_date).toISOString() : undefined,
-        sex: dto.sex,
-        address: dto.address,
-        mobile: dto.mobile,
-        phone: dto.phone,
-        nationality: dto.nationality,
-        sport_id: dto.sport_id,
+        ...dto
       }
     });
     return profile;
