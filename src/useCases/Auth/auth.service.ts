@@ -38,7 +38,8 @@ class AuthUseCase {
       include: {
         sport: true,
         athlete: true,
-        scout: true
+        scout: true,
+        organization: true
       },
       where: {
         public_id: user.data.user.id

@@ -14,7 +14,8 @@ class ProfileUseCase {
     await this.validateUser(dto)
     const profile = await this.prisma.client.profiles.create({
       include: {
-        sport: true
+        sport: true,
+        organization: true
       },
       data: {
         first_name: dto.first_name,
@@ -95,8 +96,12 @@ class ProfileUseCase {
   async executeReadAthlete(public_id: string) {
     const athlete = await this.prisma.client.userAthleteProfile.findFirst({
       include: {
-        profile: true,
-        media: true  
+        profile: {
+          include: {
+            organization: true
+          }
+        },
+        media: true,
       },
       where: {
         profile: {
@@ -128,7 +133,11 @@ class ProfileUseCase {
       take: params.items,
       where: Object.keys(whereClause).length > 0 ? whereClause : undefined,
       include: {
-        profile: true,
+        profile: {
+          include: {
+            organization: true
+          }
+        },
         sport_position: true
       },
     });
