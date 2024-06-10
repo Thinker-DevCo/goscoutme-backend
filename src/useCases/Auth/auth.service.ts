@@ -34,6 +34,7 @@ class AuthUseCase {
       email: dto.email,
       password: dto.password
     })
+    if(!user.data.user) throw new BaseError('FORBIDDEN', HttpStatusCode.FORBIDDEN, true, 'email or password is incorret')
     const user_profile = await this.prisma.client.profiles.findUnique({
       include: {
         sport: true,
