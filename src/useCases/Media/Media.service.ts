@@ -52,6 +52,7 @@ class MediaUseCase {
         athlete_id: athlete_id
       }
     })
+    return media
   }
 
   async executeUpdateMedia() {
