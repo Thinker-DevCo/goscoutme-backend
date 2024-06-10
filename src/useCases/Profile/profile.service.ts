@@ -146,7 +146,7 @@ class ProfileUseCase {
   }
   async executeUpdateProfile(id: string, dto: UpdateProfileDto) {
     const profile = await this.prisma.client.profiles.update({
-      where: { id: parseInt(id) },
+      where: { public_id: id },
       data: {
         first_name: dto.first_name,
         last_name: dto.last_name,
