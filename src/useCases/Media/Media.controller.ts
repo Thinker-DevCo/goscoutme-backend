@@ -32,10 +32,15 @@ export class MediaController {
   }
 
   @Authenticated()
-  @Get("")
-  async handleReadMedia(request: Request, response: Response) {
-    const {athlete_id} = request.query
-    return response.json({ message: "Read Media" });
+  @Get("/get")
+  async handleReadMedia(request: Request, response: Response, next: NextFunction) {
+    try{
+      const {athlete_id} = request.query
+      const presignedUrl = await new MediaUseCase().executeReadMedia(Number(athlete_id))
+      return response.status(201).json({url:presignedUrl});
+    }catch(err){
+      next(err)
+    }
   }
 
   @Put("/:id")
