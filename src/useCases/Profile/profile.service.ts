@@ -10,7 +10,7 @@ class ProfileUseCase {
   constructor(){
     this.prisma = new PrismaService();
   }
-  async executeCreateProfile(dto: ICreateProfileDto) {
+  async executeCreateProfile(dto: ICreateProfileDto, user_id: string) {
     await this.validateUser(dto)
     const profile = await this.prisma.client.profiles.create({
       include: {
@@ -37,7 +37,7 @@ class ProfileUseCase {
           }
         },
         nationality: dto.nationality,
-        public_id: dto.public_id,
+        public_id:user_id,
         sport_id: dto.sport_id,
       }
     })
@@ -99,8 +99,9 @@ class ProfileUseCase {
         profile: {
           include: {
             organization: true
-          }
+          },
         },
+        sport_position: true,
         media: true,
       },
       where: {

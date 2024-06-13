@@ -6,11 +6,16 @@ import * as http from "http";
 import cors from "cors";
 import { AppGlobalRoutes } from "./modules";
 import { errorHandler } from "./middlewares/errorHandler";
-
+import { RedisService } from "./providers/redis/redisClient";
+import { createServer } from 'http';
+import { Server, Socket } from "socket.io";
+import { ServerSocket } from "./providers/webSocket/webSocket";
 
 
 dotenv.config();
 const app = express();
+const server = createServer(app);
+
 const port = process.env.PORT || 3000;
 const appGlobalRoutesInstance = new AppGlobalRoutes();
 
@@ -22,6 +27,7 @@ appGlobalRoutesInstance.startModule(app);
 
 app.use(errorHandler);
 
-app.listen(port);
+new ServerSocket(server)
+server.listen(port);
 
-export { app };
+export { app, server };

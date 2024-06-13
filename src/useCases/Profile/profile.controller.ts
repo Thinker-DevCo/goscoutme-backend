@@ -13,7 +13,8 @@ export class ProfileController {
   @Post("/create_profile")
   async handleCreateprofile(request: Request<{}, {}, ICreateProfileDto>, response: Response, next: NextFunction) {
     try{
-      const data = await new ProfileUseCase().executeCreateProfile(request.body)
+      const user_id = request.user.data.user.id
+      const data = await new ProfileUseCase().executeCreateProfile(request.body, user_id)
       return response.json(data);
     }catch(err){
       next(err)

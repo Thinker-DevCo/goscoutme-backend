@@ -1,11 +1,14 @@
 import { NotFoundError } from "routing-controllers";
 import { PrismaService } from "../../providers/prisma/prismaClient";
 import { CreateAppointmentsDto } from "./dto";
+import { RedisService } from "../../providers/redis/redisClient";
 
 class AppointmentsUseCase {
   private readonly prisma: PrismaService
+  private readonly redis: RedisService
   constructor(){
     this.prisma = new PrismaService();
+    this.redis = new RedisService();
   }
   async executeCreateAppointments(scout_id: string, dto: CreateAppointmentsDto) {
     console.log(scout_id)
@@ -16,7 +19,6 @@ class AppointmentsUseCase {
         }
       }
     })
-    console.log(scout)
     if(!scout) throw new NotFoundError('there is no scout with the provided id')
     const athlete = await this.prisma.client.userAthleteProfile.findFirst({
       where: {
@@ -36,11 +38,25 @@ class AppointmentsUseCase {
         title: dto.title
       }
     })  
+    await this.redis.publish(String(dto.athlete_id), JSON.stringify(appointments))
     return appointments
   }
 
   async executeReadAppointments(id: string) {
       const appointments = await this.prisma.client.userAppointments.findMany({
+        include: {
+          athlete: {
+            include: {
+              profile: {
+                include: {
+                  sport: true,
+                }
+              }
+            }
+          },
+          scout: {
+          }
+        },
         where: {
           OR: [
             {

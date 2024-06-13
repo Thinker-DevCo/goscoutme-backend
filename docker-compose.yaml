@@ -1,0 +1,29 @@
+version: '3.8'
+services:
+  app:
+    container_name: app
+    build: .
+    command: npm run start
+    volumes:
+      - .:/app
+    env_file: '.env'
+    ports:
+      - '8000:8000'
+    restart: always
+    networks:
+      - my-network
+  redis:
+    container_name: redis
+    image: redis
+    ports:
+      - 6379:6379
+    volumes:
+      - redis:/data
+    networks:
+      - my-network
+networks:
+  my-network:
+
+volumes:
+  redis:
+    driver: local
