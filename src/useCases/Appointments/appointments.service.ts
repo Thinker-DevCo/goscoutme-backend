@@ -2,6 +2,8 @@ import { NotFoundError } from "routing-controllers";
 import { PrismaService } from "../../providers/prisma/prismaClient";
 import { CreateAppointmentsDto } from "./dto";
 import { RedisService } from "../../providers/redis/redisClient";
+import { ServerSocket } from "../../providers/webSocket/webSocket";
+import { socket } from "../../server";
 
 class AppointmentsUseCase {
   private readonly prisma: PrismaService
@@ -28,6 +30,7 @@ class AppointmentsUseCase {
       }
   })  
     if(!athlete) throw new NotFoundError('there is no athlete with the provided id')
+    await socket.subscribeUser(String(dto.athlete_id), 30)
     const appointments = await this.prisma.client.userAppointments.create({
       data: {
         scout_id: scout.id, 
@@ -37,8 +40,9 @@ class AppointmentsUseCase {
         duration: dto.duration,
         title: dto.title
       }
-    })  
-    await this.redis.publish(String(dto.athlete_id), JSON.stringify(appointments))
+    }) 
+    
+    await socket.publish(String(dto.athlete_id), JSON.stringify(appointments))
     return appointments
   }
 

@@ -27,7 +27,7 @@ appGlobalRoutesInstance.startModule(app);
 
 app.use(errorHandler);
 
-new ServerSocket(server)
+const socket = new ServerSocket(server)
 server.listen(port);
 
-export { app, server };
+export { app, server, socket };

@@ -15,7 +15,9 @@ class ProfileUseCase {
     const profile = await this.prisma.client.profiles.create({
       include: {
         sport: true,
-        organization: true
+        organization: true,
+        athlete: true, 
+        scout: true
       },
       data: {
         first_name: dto.first_name,
@@ -65,7 +67,7 @@ class ProfileUseCase {
       })
       return{
         profile: profile,
-        athlete: athlete
+
       }
     }else {
       const scout = await this.prisma.client.userScoutProfile.create({
@@ -75,7 +77,6 @@ class ProfileUseCase {
       })
       return{
         profile: profile,
-        scout: scout
       }
     }
   }

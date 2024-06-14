@@ -1,14 +1,23 @@
 import { Server as HTTPServer } from "http";
 import { Socket, Server } from "socket.io";
+import { v4 } from "uuid";
+import { RedisService } from "../redis/redisClient";
 
-export class ServerSocket {
+interface IJoinData {
+  user_id: string;
+}
+
+export class ServerSocket  extends RedisService{
   public static instance: ServerSocket;
   public io: Server;
+  private readonly redis: RedisService;
 
   public users: { [uid: string]: Socket };
 
   constructor(server: HTTPServer) {
+    super()
     ServerSocket.instance = this;
+    this.users = {};
     this.io = new Server(server, {
       serveClient: false,
       pingInterval: 10000,
@@ -18,10 +27,17 @@ export class ServerSocket {
         origin: "*",
       },
     });
+    this.redis = new RedisService()
     this.io.on("connection", this.startListeners);
     console.info("Socket IO started");
   }
   startListeners = (socket: Socket) => {
-    console.log("connection on: ", socket.id);
   };
+  public async unsubscribeUser(user: string){
+    await this.redis.unsubscribe(user, this.io);
+  }
+  public async subscribeUser(user: string, duration: number){
+    await this.redis.subscribe(user, this.io, duration);
+  }
+
 }

@@ -34,6 +34,7 @@ model Profiles {
   sport          Sports?                  @relation(fields: [sport_id], references: [id], onDelete: NoAction)
   athlete        UserAthleteProfile?
   scout          UserScoutProfile?
+  notifications  Notifications[]
 }
 
 model UserAthleteProfile {
@@ -56,6 +57,16 @@ model UserAthleteProfile {
   league_played     String?
   sport_position    SportPosition?         @relation(fields: [sport_position_id], references: [id], onDelete: NoAction)
   sport_attributes  UserSportsAttributes[]
+}
+
+model Notifications {
+  id         Int                        @id @default(autoincrement())
+  message    String
+  status     NotificationsStatusOptions @default(OPEN)
+  created_at DateTime                   @default(now())
+  updated_at DateTime                   @updatedAt
+  profile_id Int
+  profiles   Profiles                   @relation(fields: [profile_id], references: [id], onDelete: Cascade)
 }
 
 model UserCareerStatistics {
@@ -383,4 +394,9 @@ enum AthleteStatusOptions {
 enum UserAccountStatusOptions {
   ACTIVE
   INATIVE
+}
+
+enum NotificationsStatusOptions {
+  VIEWED
+  OPEN
 }

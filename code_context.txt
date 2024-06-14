@@ -57,6 +57,20 @@ interface Appmetadata {
   provider: string;
   providers: string[];
 }
+// File: src/@types/expresss.d.ts
+// File: src/types/express.d.ts
+
+import { UserResponse } from '@supabase/supabase-js';
+import { Request } from 'express';
+
+declare global {
+  namespace Express {
+    interface Request {
+      user?: UserResponse; // Replace 'any' with your user type if available
+    }
+  }
+}
+
 // File: src/@types/options.d.ts
 export enum IUserSexOptions{
   NOT_SPECIEFIED = NOT_SPECIEFIED,
@@ -271,21 +285,39 @@ export enum CountriesOptions {
   ZIMBABWE = 'ZIMBABWE',
 }
 // File: src/decorators/Security.decorator.ts
-import { Request, Response, NextFunction } from "express";
-import { supabase } from "../providers/supabase/supabase";
-import { BaseError, HttpStatusCode } from "../providers/errorProvider";
+// File: src/decorators/authDecorator.ts
 
-export function Secure(): MethodDecorator {
-    return (target, propertyKey) => {
-        const originalMethod = target[propertyKey];
-        target[propertyKey] = async function (req: Request, res: Response, next: NextFunction) {
-            const accessToken = req.headers.authorization?.split(' ')[1];
-            const user=await supabase.auth.getUser(accessToken);
-            
-            if(!user.data.user) throw new BaseError('FORBIDDEN', HttpStatusCode.FORBIDDEN, false, 'User UnAuthenticated')
-            return originalMethod.apply(this, [req, res, next]);
-        };
+import { NextFunction, Request, RequestHandler, Response } from 'express';
+import { isAuthenticated } from '../middlewares/authMiddleware';
+
+
+export function Authenticated(): MethodDecorator {
+  return function (target: any, propertyKey: string | symbol, descriptor: PropertyDescriptor) {
+    const originalMethod = descriptor.value;
+
+    descriptor.value = async function (...args: any[]) {
+      const req = args[0] as Request;
+      const res = args[1] as Response;
+      const next = args[2] as NextFunction;
+
+      try {
+        await new Promise<void>((resolve, reject) => {
+          isAuthenticated(req, res, (err: any) => {
+            if (err) {
+              reject(err);
+            } else {
+              resolve();
+            }
+          });
+        });
+        return originalMethod.apply(this, args);
+      } catch (err) {
+        next(err);
+      }
     };
+
+    return descriptor;
+  };
 }
 
 // File: src/decorators/controller.decorator.ts
@@ -498,6 +530,27 @@ export interface IRouter {
   requestBodyDto?: Type<any> | any;
   responseBodyDto?: Type<any> | any;
 }
+// File: src/middlewares/authMiddleware.ts
+import { Request, Response, NextFunction } from 'express';
+import { supabase } from '../providers/supabase/supabase';
+
+export const isAuthenticated = async (req: Request, res: Response, next: NextFunction) => {
+  const authHeader = req.headers.authorization;
+
+  if (!authHeader) {
+    return res.status(401).json({ message: 'Unauthorized' });
+  }
+
+  const token = authHeader.split(' ')[1];
+  try {
+    const user = await supabase.auth.getUser(token);
+    if(!user) return res.status(401).json({ message: 'Unauthorized' });
+    req.user = user
+    next();
+  } catch (err) {
+    return res.status(401).json({ message: 'Unauthorized' });
+  }
+};
 // File: src/middlewares/errorHandler.ts
 import { BaseError, HttpStatusCode } from "../providers/errorProvider";
 import { NextFunction, Request, Response } from "express";
@@ -530,49 +583,16 @@ import { GlobalRoutes } from "./decorators";
 import { AuthController } from "./useCases/Auth/auth.controller";
 import { AuthRoutes } from "./useCases/Auth/auth.route";
 import { ProfileRoutes } from "./useCases/Profile/profile.route";
+import { SportsRoutes } from "./useCases/Sports/sports.route";
+import { MediaRoutes } from "./useCases/Media/Media.route";
+import { AppointmentsRoutes } from "./useCases/Appointments/appointments.route";
 
-@GlobalRoutes([AuthRoutes, ProfileRoutes])
+@GlobalRoutes([AuthRoutes, ProfileRoutes, SportsRoutes, MediaRoutes, AppointmentsRoutes])
 export class AppGlobalRoutes {
   startModule(app: Express): void {}
 }
 
 
-
-// File: src/providers/errorProvider.js
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.APIError = exports.BaseError = exports.HttpStatusCode = void 0;
-var HttpStatusCode;
-(function (HttpStatusCode) {
-    HttpStatusCode[HttpStatusCode["OK"] = 200] = "OK";
-    HttpStatusCode[HttpStatusCode["BAD_REQUEST"] = 400] = "BAD_REQUEST";
-    HttpStatusCode[HttpStatusCode["NOT_FOUND"] = 404] = "NOT_FOUND";
-    HttpStatusCode[HttpStatusCode["INTERNAL_SERVER"] = 500] = "INTERNAL_SERVER";
-    HttpStatusCode[HttpStatusCode["FORBIDDEN"] = 403] = "FORBIDDEN";
-    HttpStatusCode[HttpStatusCode["UNAUTORIZED"] = 401] = "UNAUTORIZED";
-})(HttpStatusCode || (exports.HttpStatusCode = HttpStatusCode = {}));
-class BaseError extends Error {
-    constructor(name, httpCode, isOperational, description) {
-        super(description);
-        Object.setPrototypeOf(this, new.target.prototype);
-        this.name = name;
-        this.httpCode = httpCode;
-        this.isOperational = isOperational;
-        Error.captureStackTrace(this);
-    }
-}
-exports.BaseError = BaseError;
-class APIError extends BaseError {
-    constructor(name, httpCode = HttpStatusCode.INTERNAL_SERVER, isOperational = true, description = "internal server error") {
-        super(name, httpCode, isOperational, description);
-    }
-}
-exports.APIError = APIError;
-class HTTP404Error extends BaseError {
-    constructor(description) {
-        super("NOT FOUND", HttpStatusCode.NOT_FOUND, true, description);
-    }
-}
 
 // File: src/providers/errorProvider.ts
 export enum HttpStatusCode {
@@ -637,9 +657,168 @@ export class PrismaService {
     await this.client.$disconnect();
   }
 }
+// File: src/providers/redis/redisClient.ts
+import { Redis } from 'ioredis';
+import { Server } from 'socket.io';
+
+export class RedisService {
+  private readonly cacheClient: Redis;
+  private readonly pubClient: Redis;
+  private readonly subClient: Redis;
+  // private schoolGateway: SchoolGateway;
+  private readonly subscribers: { [channel: string]: Server[] } = {};
+  constructor() {
+    this.cacheClient = new Redis(process.env.REDIS_URL);
+    this.pubClient = new Redis(process.env.REDIS_URL);
+    this.subClient = new Redis(process.env.REDIS_URL);
+
+    this.cacheClient.on('error', (err) => {
+      console.log('Error on Redis cache client');
+      console.log(err);
+      process.exit(1);
+    });
+
+    this.pubClient.on('error', (err) => {
+      console.log('Error on Redis Pub/Sub client');
+      console.log(err);
+      process.exit(1);
+    });
+    this.subClient.on('error', (err) => {
+      console.log('Error on Redis Pub/Sub client');
+      console.log(err);
+      process.exit(1);
+    });
+
+    this.cacheClient.on('connect', () => {
+      console.log('Redis cache client connected');
+    });
+
+    this.pubClient.on('connect', () => {
+      console.log('Redis Pub/Sub client connected');
+    });
+    this.subClient.on('connect', () => {
+      console.log('Redis Pub/Sub client connected');
+    });
+
+    this.subClient.on('message', (channel: string, message: string) => {
+      if (this.subscribers[channel]) {
+        for (const server of this.subscribers[channel]) {
+          server.emit(channel, message);
+        }
+      }
+    });
+  }
+
+  // Redis caching methods
+
+  async get(key: string) {
+    return await this.cacheClient.get(key);
+  }
+
+  async set(key: string, value: string, mode?: string, duration?: number) {
+    if (mode === 'EX' && duration) {
+      return await this.cacheClient.set(key, value, mode, duration);
+    }
+    return await this.cacheClient.set(key, value);
+  }
+
+  // Redis Pub/Sub methods
+
+  async subscribe(channel: string, server: Server, duration?: number) {
+    if (!this.subscribers[channel]) {
+      this.subscribers[channel] = [];
+      console.log(this.subscribers, "created")
+      await this.subClient.subscribe(channel);
+    }
+    if(this.subscribers[channel].find((s)=> server)){
+      return;
+    }else{
+      return this.subscribers[channel].push(server);
+    }
+  }
+
+  async publish(channel: string, message: string) {
+    return await this.pubClient.publish(channel, message);
+  }
+
+  async unsubscribe(channel: string, server: Server) {
+    if (this.subscribers[channel]) {
+      const index = this.subscribers[channel].indexOf(server);
+      if (index !== -1) {
+        this.subscribers[channel].splice(index, 1);
+        if (this.subscribers[channel].length === 0) {
+          delete this.subscribers[channel];
+          return await this.subClient.unsubscribe(channel);
+        }
+      }
+    }
+  }
+}
+// File: src/providers/s3/s3Client.ts
+import { S3Client } from "@aws-sdk/client-s3";
+
+export class S3Provider{
+  public client: S3Client
+  public r2: S3Client
+   constructor(){
+    this.client = new S3Client({
+      region: 'af-south-1',
+      credentials: {
+      accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+      secretAccessKey: process.env.AWS_SECRET_KEY_ID
+    },
+
+  })
+   }
+   
+}
 // File: src/providers/supabase/supabase.ts
 import { createClient } from '@supabase/supabase-js'
 export const supabase = createClient('https://mkroqhhzgdfcinnephdx.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1rcm9xaGh6Z2RmY2lubmVwaGR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTczMzY4NTYsImV4cCI6MjAzMjkxMjg1Nn0.nLGB3XDH3cuh3C3ixIBWfoAN6nGS0yQUggaOEnaIh0Q')
+// File: src/providers/webSocket/webSocket.ts
+import { Server as HTTPServer } from "http";
+import { Socket, Server } from "socket.io";
+import { v4 } from "uuid";
+import { RedisService } from "../redis/redisClient";
+
+interface IJoinData {
+  user_id: string;
+}
+
+export class ServerSocket  extends RedisService{
+  public static instance: ServerSocket;
+  public io: Server;
+  private readonly redis: RedisService;
+
+  public users: { [uid: string]: Socket };
+
+  constructor(server: HTTPServer) {
+    super()
+    ServerSocket.instance = this;
+    this.users = {};
+    this.io = new Server(server, {
+      serveClient: false,
+      pingInterval: 10000,
+      pingTimeout: 5000,
+      cookie: false,
+      cors: {
+        origin: "*",
+      },
+    });
+    this.redis = new RedisService()
+    this.io.on("connection", this.startListeners);
+    console.info("Socket IO started");
+  }
+  startListeners = (socket: Socket) => {
+  };
+  public async unsubscribeUser(user: string){
+    await this.redis.unsubscribe(user, this.io);
+  }
+  public async subscribeUser(user: string, duration: number){
+    await this.redis.subscribe(user, this.io, duration);
+  }
+
+}
 // File: src/server.ts
 import express, { NextFunction, Request, Response, Router } from "express";
 import "express-async-errors";
@@ -649,11 +828,16 @@ import * as http from "http";
 import cors from "cors";
 import { AppGlobalRoutes } from "./modules";
 import { errorHandler } from "./middlewares/errorHandler";
-
+import { RedisService } from "./providers/redis/redisClient";
+import { createServer } from 'http';
+import { Server, Socket } from "socket.io";
+import { ServerSocket } from "./providers/webSocket/webSocket";
 
 
 dotenv.config();
 const app = express();
+const server = createServer(app);
+
 const port = process.env.PORT || 3000;
 const appGlobalRoutesInstance = new AppGlobalRoutes();
 
@@ -665,16 +849,186 @@ appGlobalRoutesInstance.startModule(app);
 
 app.use(errorHandler);
 
-app.listen(port);
+const socket = new ServerSocket(server)
+server.listen(port);
 
-export { app };
+export { app, server, socket };
+// File: src/useCases/Appointments/appointments.controller.ts
+import { Controller, Post, Get, Put, Delete } from "../../decorators";
+import { NextFunction, Request, Response } from "express";
+import { CreateAppointmentsDto, UpdateAppointmentsDto } from "./dto";
+import { Authenticated } from "../../decorators/Security.decorator";
+import { AppointmentsUseCase } from "./appointments.service";
+
+@Controller('/appointments', '1')
+export class AppointmentsController {
+  @Authenticated()
+  @Post("/create")
+  async handleCreateappointments(request: Request<{}, {}, CreateAppointmentsDto>, response: Response, next: NextFunction) {
+    try{  
+      const user = request.user.data.user.id
+      const data = await new AppointmentsUseCase().executeCreateAppointments(user, request.body)
+      return response.status(201).json(data)
+    }catch(err){
+      next(err)
+    }
+  }
+
+  @Authenticated()
+  @Get("/get_user_appointments")
+  async handleReadAppointments(request: Request, response: Response, next: NextFunction) {
+    try{  
+      const user = request.user.data.user.id
+      const data = await new AppointmentsUseCase().executeReadAppointments(user)
+      return response.status(200).json(data)
+    }catch(err){
+      next(err)
+    }
+  }
+
+  @Put("/:id")
+  async handleUpdateAppointments(request: Request<{id: string}, {}, UpdateAppointmentsDto>, response: Response) {
+    // Handle updating a resource by ID
+    return response.json({ message: "Update appointments" });
+  }
+
+  @Delete("/:id")
+  async handleDeleteAppointments(request: Request<{id: string}>, response: Response) {
+    // Handle deleting a resource by ID
+    return response.json({ message: "Delete appointments" });
+  }
+}
+
+// File: src/useCases/Appointments/appointments.route.ts
+import { Route } from "../../decorators/module.decorator";
+import { AppointmentsController } from "./appointments.controller";
+
+@Route([AppointmentsController])
+export class AppointmentsRoutes {
+  // Add route logic here if needed
+}
+
+// File: src/useCases/Appointments/appointments.service.ts
+import { NotFoundError } from "routing-controllers";
+import { PrismaService } from "../../providers/prisma/prismaClient";
+import { CreateAppointmentsDto } from "./dto";
+import { RedisService } from "../../providers/redis/redisClient";
+import { ServerSocket } from "../../providers/webSocket/webSocket";
+import { socket } from "../../server";
+
+class AppointmentsUseCase {
+  private readonly prisma: PrismaService
+  private readonly redis: RedisService
+  constructor(){
+    this.prisma = new PrismaService();
+    this.redis = new RedisService();
+  }
+  async executeCreateAppointments(scout_id: string, dto: CreateAppointmentsDto) {
+    console.log(scout_id)
+    const scout = await this.prisma.client.userScoutProfile.findFirst({
+      where: {
+        profile: {
+          public_id: scout_id
+        }
+      }
+    })
+    if(!scout) throw new NotFoundError('there is no scout with the provided id')
+    const athlete = await this.prisma.client.userAthleteProfile.findFirst({
+      where: {
+        profile: {
+          public_id: String(dto.athlete_id)
+        }
+      }
+  })  
+    if(!athlete) throw new NotFoundError('there is no athlete with the provided id')
+    await socket.subscribeUser(String(dto.athlete_id), 30)
+    const appointments = await this.prisma.client.userAppointments.create({
+      data: {
+        scout_id: scout.id, 
+        athlete_id: athlete.id,
+        scheduled: new Date(dto.scheduled).toISOString(),
+        description: dto.description,
+        duration: dto.duration,
+        title: dto.title
+      }
+    }) 
+    
+    await socket.publish(String(dto.athlete_id), JSON.stringify(appointments))
+    return appointments
+  }
+
+  async executeReadAppointments(id: string) {
+      const appointments = await this.prisma.client.userAppointments.findMany({
+        include: {
+          athlete: {
+            include: {
+              profile: {
+                include: {
+                  sport: true,
+                }
+              }
+            }
+          },
+          scout: {
+          }
+        },
+        where: {
+          OR: [
+            {
+              athlete: {
+                profile: {
+                  public_id: id
+                }
+              },
+            },
+            {
+              scout: {
+                profile: {
+                  public_id: id
+                }
+              }
+            }
+          ]
+        }
+      })  
+      return appointments
+  }
+
+  async executeUpdateAppointments() {
+    // Implement the update use case logic here
+  }
+
+  async executeDeleteAppointments() {
+    // Implement the delete use case logic here
+  }
+}
+
+export { AppointmentsUseCase };
+
+// File: src/useCases/Appointments/dto/CreateAppointments.dto.ts
+import { UserAppointments } from '@prisma/client';
+import { IsNotEmpty, IsString } from 'class-validator';
+
+export type CreateAppointmentsDto = Omit<UserAppointments,'scout_id'>
+
+// File: src/useCases/Appointments/dto/UpdateAppointments.dto.ts
+import { CreateAppointmentsDto } from "./CreateAppointments.dto";
+
+type CreateAppointmentsDtoPartial = Partial<CreateAppointmentsDto>
+export class UpdateAppointmentsDto implements CreateAppointmentsDtoPartial {}
+
+// File: src/useCases/Appointments/dto/index.ts
+import { CreateAppointmentsDto } from "./CreateAppointments.dto";
+import { UpdateAppointmentsDto } from "./UpdateAppointments.dto";
+
+export { CreateAppointmentsDto, UpdateAppointmentsDto }
+
 // File: src/useCases/Auth/auth.controller.ts
 import { Controller, Post, Get, Put, Delete } from "../../decorators";
 import { NextFunction, Request, Response } from "express";
 import { ICreateAuthDto, UpdateAuthDto } from "./dto";
 import { AuthUseCase } from "./auth.service";
 import { ISignIn } from "./dto/CreateAuth.dto";
-import { Secure } from "../../decorators/Security.decorator";
 import { Token } from "../../decorators/token.decorator";
 
 @Controller('auth', '1')
@@ -701,7 +1055,7 @@ export class AuthController {
 
 
  
-  @Secure()
+
   @Get("/refresh_token")
   async handleRefreshToken(request: Request<{id: string}>, response: Response,next: NextFunction, @Token() token: string) {
     try{
@@ -746,8 +1100,6 @@ class AuthUseCase {
       password: dto.password
     })
     if(user.error) throw new BaseError('FORBIDDEN', HttpStatusCode.FORBIDDEN, true, 'User already exists')
-
-
     delete user.data.user.user_metadata,
     delete user.data.user.identities
     return {
@@ -761,7 +1113,14 @@ class AuthUseCase {
       email: dto.email,
       password: dto.password
     })
+    if(!user.data.user) throw new BaseError('FORBIDDEN', HttpStatusCode.FORBIDDEN, true, 'email or password is incorret')
     const user_profile = await this.prisma.client.profiles.findUnique({
+      include: {
+        sport: true,
+        athlete: true,
+        scout: true,
+        organization: true
+      },
       where: {
         public_id: user.data.user.id
       }
@@ -865,19 +1224,255 @@ import { UpdateAuthDto } from "./UpdateAuth.dto";
 
 export { ICreateAuthDto, UpdateAuthDto }
 
+// File: src/useCases/Media/Media.controller.ts
+import { Controller, Post, Get, Put, Delete } from "../../decorators";
+import { NextFunction, Request, Response } from "express";
+import { CreateMediaDto, UpdateMediaDto } from "./dto";
+import { Authenticated } from "../../decorators/Security.decorator";
+import { MediaUseCase } from "./Media.service";
+
+@Controller('/Media', '1')
+export class MediaController {
+  @Authenticated()
+  @Post("/storeMedia")
+  async handleCreateMedia(request: Request<{}, {}, CreateMediaDto>, response: Response, next: NextFunction){
+    try{
+      const user_id = request.user.data.user.id
+      const media = await new MediaUseCase().executeCreateMedia(request.body, user_id)
+      return response.status(201).json(media);
+    }catch(err){
+      next(err)
+    }
+  }
+
+  @Authenticated()
+  @Post("/create_presigned_url")
+  async handleCreatePresignedUrl(request: Request, response: Response, next: NextFunction) {
+    try{
+      const {file_name, file_type} = request.body
+      const user_id = request.user.data.user.id
+      const presignedUrl = await new MediaUseCase().executeCreatePresignedUser(user_id,file_name, file_type)
+      return response.status(201).json({url:presignedUrl});
+    }catch(err){
+      next(err)
+    }
+  }
+
+  @Authenticated()
+  @Get("/get")
+  async handleReadMedia(request: Request, response: Response, next: NextFunction) {
+    try{
+      const {athlete_id} = request.query
+      const presignedUrl = await new MediaUseCase().executeReadMedia(Number(athlete_id))
+      return response.status(201).json({url:presignedUrl});
+    }catch(err){
+      next(err)
+    }
+  }
+
+  @Put("/:id")
+  async handleUpdateMedia(request: Request<{id: string}, {}, UpdateMediaDto>, response: Response) {
+    // Handle updating a resource by ID
+    return response.json({ message: "Update Media" });
+  }
+
+  @Delete("/:id")
+  async handleDeleteMedia(request: Request<{id: string}>, response: Response) {
+    // Handle deleting a resource by ID
+    return response.json({ message: "Delete Media" });
+  }
+}
+
+// File: src/useCases/Media/Media.route.ts
+import { Route } from "../../decorators/module.decorator";
+import { MediaController } from "./Media.controller";
+
+@Route([MediaController])
+export class MediaRoutes {
+  // Add route logic here if needed
+}
+
+// File: src/useCases/Media/Media.service.ts
+import { NotFoundError } from "routing-controllers";
+import { PrismaService } from "../../providers/prisma/prismaClient";
+import { CreateMedia } from "./dto/CreateMedia.dto";
+import { HttpStatusCode } from "../../providers/errorProvider";
+import { supabase } from "../../providers/supabase/supabase";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import { S3Provider } from "../../providers/s3/s3Client";
+import { PutObjectAclCommand, PutObjectCommand } from "@aws-sdk/client-s3";
+
+class MediaUseCase {
+  private readonly prisma: PrismaService
+  private readonly s3: S3Provider
+  constructor(){
+    this.prisma = new PrismaService();
+    this.s3 = new S3Provider();
+  }
+  async executeCreateMedia(dto: CreateMedia, user_id: string) {
+    const user = await this.prisma.client.userAthleteProfile.findFirst({
+      where: {
+        profile: {
+          public_id: user_id
+        }
+      }
+    })
+    if(!user) throw new NotFoundError('user was not found')
+    const file = await this.prisma.client.userMedia.create({
+      data: {
+        athlete_id: user.id,
+        media_url: `https://goscoutmee.s3.af-south-1.amazonaws.com/${user.id}/${dto.name.replace(
+          / /g,
+          '+',
+        )}`,
+        type: dto.type,
+        name: dto.name
+      }
+    })
+    return file
+  }
+
+  async executeCreatePresignedUser(user_id: string, file_name: string, file_type: string){
+    const signedUrl = await getSignedUrl(this.s3.client,new PutObjectCommand({
+      Bucket: 'goscoutmee',
+      Key: `${user_id}/${file_name}`,
+      ACL: 'public-read-write'
+    }), {expiresIn: 600})
+    return signedUrl
+  }
+
+  async executeReadMedia(athlete_id: number) {
+    const media = await this.prisma.client.userMedia.findMany({
+      where: {
+        athlete_id: athlete_id
+      }
+    })
+    return media
+  }
+
+  async executeUpdateMedia() {
+    // Implement the update use case logic here
+  }
+
+  async executeDeleteMedia() {
+    // Implement the delete use case logic here
+  }
+}
+
+export { MediaUseCase };
+
+// File: src/useCases/Media/dto/CreateMedia.dto.ts
+import { UserMedia } from '@prisma/client';
+import { IsNotEmpty, IsString } from 'class-validator';
+
+export type CreateMedia =  UserMedia
+// File: src/useCases/Media/dto/UpdateMedia.dto.ts
+import { CreateMediaDto } from "./CreateMedia.dto";
+
+type CreateMediaDtoPartial = Partial<CreateMediaDto>
+export class UpdateMediaDto implements CreateMediaDtoPartial {}
+
+// File: src/useCases/Media/dto/index.ts
+import { CreateMediaDto } from "./CreateMedia.dto";
+import { UpdateMediaDto } from "./UpdateMedia.dto";
+
+export { CreateMediaDto, UpdateMediaDto }
+
+// File: src/useCases/Notifications/dto/CreateNotifications.dto.ts
+import { IsNotEmpty, IsString } from 'class-validator';
+
+export class CreateNotificationsDto {
+
+  // Add other properties as needed
+}
+
+// File: src/useCases/Notifications/dto/UpdateNotifications.dto.ts
+import { CreateNotificationsDto } from "./CreateNotifications.dto";
+
+type CreateNotificationsDtoPartial = Partial<CreateNotificationsDto>
+export class UpdateNotificationsDto implements CreateNotificationsDtoPartial {}
+
+// File: src/useCases/Notifications/dto/index.ts
+import { CreateNotificationsDto } from "./CreateNotifications.dto";
+import { UpdateNotificationsDto } from "./UpdateNotifications.dto";
+
+export { CreateNotificationsDto, UpdateNotificationsDto }
+
+// File: src/useCases/Notifications/notifications.controller.ts
+import { Controller, Post, Get, Put, Delete } from "../../decorators";
+import { Request, Response } from "express";
+import { CreateNotificationsDto, UpdateNotificationsDto } from "./dto";
+
+@Controller('/notifications', '1')
+export class NotificationsController {
+  @Post("")
+  async handleCreatenotifications(request: Request<{}, {}, CreateNotificationsDto>, response: Response) {
+    // Handle creation of a new resource
+    return response.json({ message: "Create notifications" });
+  }
+
+  @Get("")
+  async handleReadNotifications(request: Request, response: Response) {
+    // Handle reading a resource
+    return response.json({ message: "Read notifications" });
+  }
+
+  @Put("/:id")
+  async handleUpdateNotifications(request: Request<{id: string}, {}, UpdateNotificationsDto>, response: Response) {
+    // Handle updating a resource by ID
+    return response.json({ message: "Update notifications" });
+  }
+
+  @Delete("/:id")
+  async handleDeleteNotifications(request: Request<{id: string}>, response: Response) {
+    // Handle deleting a resource by ID
+    return response.json({ message: "Delete notifications" });
+  }
+}
+
+// File: src/useCases/Notifications/notifications.route.ts
+import { Route } from "../../decorators/module.decorator";
+import { NotificationsController } from "./notifications.controller";
+
+@Route([NotificationsController])
+export class NotificationsRoutes {
+  // Add route logic here if needed
+}
+
+// File: src/useCases/Notifications/notifications.service.ts
+class NotificationsUseCase {
+  async executeSubscribeUser(user_id) {
+
+  }
+
+  async executeReadNotifications() {
+    // Implement the read use case logic here
+  }
+
+  async executeUpdateNotifications() {
+    // Implement the update use case logic here
+  }
+
+  async executeDeleteNotifications() {
+    // Implement the delete use case logic here
+  }
+}
+
+export { NotificationsUseCase };
+
 // File: src/useCases/Profile/dto/CreateProfile.dto.ts
-import { UserSexOptions, CountriesOptions, Profiles, UserAthleteProfile, UserScoutProfile } from '@prisma/client';
+import { UserSexOptions, CountriesOptions, Profiles, UserAthleteProfile, UserScoutProfile, UserOrganization, UserCareerStatistics } from '@prisma/client';
 import { IsDateString, IsEmail, IsEnum, IsMobilePhone, IsNotEmpty, IsOptional, IsPhoneNumber, IsString } from 'class-validator';
 
 
-export type ICreateProfileDto = Profiles & UserAthleteProfile & UserScoutProfile & {
+export type ICreateProfileDto = Profiles & UserAthleteProfile & UserScoutProfile & UserOrganization & UserCareerStatistics &{
   userType: 'ATHLETE' | 'SCOUT'
 }
 // File: src/useCases/Profile/dto/UpdateProfile.dto.ts
 import { ICreateProfileDto } from "./CreateProfile.dto";
 
-type CreateProfileDtoPartial = Partial<ICreateProfileDto>
-export class UpdateProfileDto implements CreateProfileDtoPartial {}
+export type UpdateProfileDto = Partial<ICreateProfileDto>
+
 
 // File: src/useCases/Profile/dto/index.ts
 import { ICreateProfileDto } from "./CreateProfile.dto";
@@ -885,50 +1480,85 @@ import { UpdateProfileDto } from "./UpdateProfile.dto";
 
 export { ICreateProfileDto, UpdateProfileDto }
 
+
 // File: src/useCases/Profile/profile.controller.ts
 import { Controller, Post, Get, Put, Delete } from "../../decorators";
 import { NextFunction, Request, Response } from "express";
 import { ICreateProfileDto, UpdateProfileDto } from "./dto";
 import { ProfileUseCase } from "./profile.service";
-import { Secure } from "../../decorators/Security.decorator";
+import { Authenticated} from "../../decorators/Security.decorator";
 import { supabase } from "../../providers/supabase/supabase";
 import { BaseError, HttpStatusCode } from "../../providers/errorProvider";
+import { AthleteStatusOptions, CountriesOptions, UserSexOptions } from "@prisma/client";
 
 @Controller('/profile', '1')
 export class ProfileController {
-  @Secure()
+  @Authenticated()
   @Post("/create_profile")
   async handleCreateprofile(request: Request<{}, {}, ICreateProfileDto>, response: Response, next: NextFunction) {
     try{
-      const accessToken = request.headers.authorization?.split(' ')[1];
-      const user= await supabase.auth.getUser(accessToken);
-      console.log(user)
-      if(!user.data.user) throw new BaseError('FORBIDDEN', HttpStatusCode.FORBIDDEN, false, 'User UnAuthenticated')
-      const data = await new ProfileUseCase().executeCreateProfile(request.body)
+      const user_id = request.user.data.user.id
+      const data = await new ProfileUseCase().executeCreateProfile(request.body, user_id)
       return response.json(data);
     }catch(err){
       next(err)
     }
-
+  }
+  
+  @Get("/get_athletes")
+  @Authenticated()
+  async handleFilterAthletes(request: Request, response: Response, next: NextFunction) {
+    try {
+      const { sex, ageMin, ageMax, status, country, page, items, position, id } = request.query;
+      const data = await new ProfileUseCase().filterAthletes({
+        sex: sex as UserSexOptions,
+        id: id as string,
+        positions: position as string,
+        ageMin: parseInt(ageMin as string),
+        ageMax: parseInt(ageMax as string),
+        status: status as AthleteStatusOptions,
+        country: country as CountriesOptions,
+        page: parseInt(page as string),
+        items: parseInt(items as string)
+      });
+      return response.json(data);
+    } catch (err) {
+      next(err);
+    }
   }
 
-  @Get("")
-  async handleReadProfile(request: Request, response: Response) {
-    // Handle reading a resource
-    return response.json({ message: "Read profile" });
+  @Get("/get_all_athletes")
+  @Authenticated()
+  async handleReadAthletes(request: Request, response: Response, next: NextFunction) {
+    try{
+      const { page, items } = request.query;
+      const data = await new ProfileUseCase().executeReadAthletes(parseInt(page as string), parseInt(items as string))
+      return response.json(data);
+    }catch(err) {
+      next(err);
+    }
+  }
+  @Get("/get_athlete_by_id")
+  @Authenticated()
+  async handleReadAthlete(request: Request<{},{}, {}, {id: string}>, response: Response, next: NextFunction) {
+    try{
+      const {id} = request.query;
+      const data = await new ProfileUseCase().executeReadAthlete(id)
+      return response.json(data);
+    }catch(err) {
+      next(err);
+    }
   }
 
-  @Put("/:id")
+
+  @Put("/update_profile/")
+  @Authenticated()
   async handleUpdateProfile(request: Request<{id: string}, {}, UpdateProfileDto>, response: Response) {
-    // Handle updating a resource by ID
-    return response.json({ message: "Update profile" });
+    const user = request.user
+    const data = await new ProfileUseCase().executeUpdateProfile(user.data.user.id, request.body )
+    return response.json(data);
   }
 
-  @Delete("/:id")
-  async handleDeleteProfile(request: Request<{id: string}>, response: Response) {
-    // Handle deleting a resource by ID
-    return response.json({ message: "Delete profile" });
-  }
 }
 
 // File: src/useCases/Profile/profile.route.ts
@@ -941,9 +1571,11 @@ export class ProfileRoutes {
 }
 
 // File: src/useCases/Profile/profile.service.ts
+import { AthleteStatusOptions } from "@prisma/client";
 import { BaseError, HttpStatusCode } from "../../providers/errorProvider";
 import { PrismaService } from "../../providers/prisma/prismaClient";
-import { ICreateProfileDto } from "./dto";
+import { ICreateProfileDto, UpdateProfileDto } from "./dto";
+import { IFilterAthletesParams } from "./types";
 
 
 class ProfileUseCase {
@@ -951,25 +1583,39 @@ class ProfileUseCase {
   constructor(){
     this.prisma = new PrismaService();
   }
-  async executeCreateProfile(dto: ICreateProfileDto) {
+  async executeCreateProfile(dto: ICreateProfileDto, user_id: string) {
     await this.validateUser(dto)
     const profile = await this.prisma.client.profiles.create({
+      include: {
+        sport: true,
+        organization: true
+      },
       data: {
         first_name: dto.first_name,
         last_name: dto.last_name,
         email: dto.email,
-        birt_date: new Date(dto.birt_date).toISOString(),
+        birth_date: new Date(dto.birth_date).toISOString(),
         sex: dto.sex,
+        affiliations: dto.affiliations || null,
         address: dto.address ? dto.address : null,
         mobile: dto.mobile ? dto.mobile : null,
         phone: dto.phone ? dto.phone : null,
+        organization: {
+          create: {
+            org_document_url: dto.org_document_url || null,
+            org_email: dto.org_email,
+            org_mobile: dto.org_mobile ||null,
+            org_name: dto.org_name|| null,
+            org_phone: dto.org_phone || null
+          }
+        },
         nationality: dto.nationality,
-        public_id: dto.public_id,
+        public_id:user_id,
         sport_id: dto.sport_id,
       }
     })
     if(dto.userType === 'ATHLETE'){
-      const ahtlete = await this.prisma.client.userAthleteProfile.create({
+      const athlete = await this.prisma.client.userAthleteProfile.create({
         data: {
           age: dto.age,
           height: dto.height,
@@ -977,19 +1623,27 @@ class ProfileUseCase {
           profile_id: profile.id,
           citzenship: dto.citzenship,
           height_metric: dto.height_metric,
-          weight_metric: dto.weight_metric
+          weight_metric: dto.weight_metric,
+          career_statistics: {
+            create: {
+              game_appearances: dto.game_appearances || 0,
+              minutes_played: dto.minutes_played || 0,
+              field_goals: dto.field_goals || 0,
+              game_started: dto.game_started || 0,
+            }
+          },
+          sport_position_id: dto.sport_position_id,
+          status: dto.status || AthleteStatusOptions.NOT_SPECIEFIED,
         }
       })
       return{
         profile: profile,
-        ahtlete: ahtlete
+        athlete: athlete
       }
     }else {
       const scout = await this.prisma.client.userScoutProfile.create({
         data: {
           profile_id: profile.id,
-          affiliations: dto.affiliations,
-          organization_id: dto.organization_id,
         }
       })
       return{
@@ -1001,8 +1655,12 @@ class ProfileUseCase {
 
   async executeReadAthletes(page: number, items:number) {
     const athlete = await this.prisma.client.userAthleteProfile.findMany({
+      skip: page * items,
+      take: items,
       include: {
-        profile: true,
+        profile: {include: {sport: true}},
+        sport_position: true
+      
       }
     })
     if(!athlete) throw new BaseError('NOT FOUND',404, false,'there are no athlete users in the database')
@@ -1011,7 +1669,13 @@ class ProfileUseCase {
   async executeReadAthlete(public_id: string) {
     const athlete = await this.prisma.client.userAthleteProfile.findFirst({
       include: {
-        profile: true,
+        profile: {
+          include: {
+            organization: true
+          },
+        },
+        sport_position: true,
+        media: true,
       },
       where: {
         profile: {
@@ -1020,26 +1684,81 @@ class ProfileUseCase {
       }
     })
     if(!athlete) throw new BaseError('NOT FOUND',404, false,'there are no athlete users in the database')
-    return {
-      profile: 
-    }
+    return athlete
   }
 
-  async executeUpdateProfile() {
-    // Implement the update use case logic here
+  async filterAthletes(params: IFilterAthletesParams) {
+    const whereClause: any = {
+      profile: {}
+    };
+    const positionQuery = this.stringToNumberArray(params.positions)
+    const sexQuery = this.stringToStringArray(params.sex)
+    const statusQuery = this.stringToStringArray(params.status)
+    const countryQuery = this.stringToStringArray(params.country)
+    if(params.id) whereClause.profile.public_id = { contains: params.id}
+    if(positionQuery && positionQuery.length > 0) whereClause.sport_position_id = whereClause.sport_position_id = { in: positionQuery};
+    if (sexQuery && sexQuery.length > 0) whereClause.profile.sex = whereClause.profile.sex = {in: sexQuery};
+    if (params.ageMin ) whereClause.age = { gte: params.ageMin };
+    if (params.ageMax) whereClause.age = { lte: params.ageMax };
+    if (statusQuery && statusQuery.length > 0) whereClause.status = whereClause.status = {in: statusQuery};
+    if (countryQuery && countryQuery.length > 0) whereClause.profile.nationality = whereClause.profile.nationality = {in: countryQuery};
+    const athletes = await this.prisma.client.userAthleteProfile.findMany({
+      skip: params.page * params.items,
+      take: params.items,
+      where: Object.keys(whereClause).length > 0 ? whereClause : undefined,
+      include: {
+        profile: {
+          include: {
+            organization: true
+          }
+        },
+        sport_position: true
+      },
+    });
+
+    return athletes;
+  }
+  async executeUpdateProfile(id: string, dto: UpdateProfileDto) {
+    const profile = await this.prisma.client.profiles.update({
+      where: { public_id: id },
+      data: {
+        ...dto
+      }
+    });
+    return profile;
   }
 
-  async executeDeleteProfile() {
-    // Implement the delete use case logic here
-  }
+
   private async validateUser(dto: ICreateProfileDto){
     if(!dto.userType ) throw new BaseError('BAD REQUEST', HttpStatusCode.BAD_REQUEST, false, 'Error creating profile')
     if(dto.userType === 'ATHLETE' ){
-      if(!dto.height || !dto.height || !dto.weight || !dto.weight_metric 
-        || !dto.citzenship || !dto.status || !dto.age 
+      if(!dto.height || !dto.height|| !dto.weight || !dto.weight_metric 
+        || !dto.citzenship || !dto.status || !dto.age  || !dto.sport_position_id
        )throw new BaseError('BAD REQUEST', HttpStatusCode.BAD_REQUEST, false, 'could not create athlete profile ')
        return;
      }
+  }
+  private stringToNumberArray(text: string){
+    if(!text) return []
+    const data = text.split('-');
+    const values = []
+    for (let i =0; i<= data.length; i++){
+      if(Number(data[i])){
+        values.push(Number(data[i]))
+      }
+    }
+    return values
+  }
+  private stringToStringArray(text: string){
+    if(!text) return []
+    const data = text.split('-');
+    const values = []
+    for (let i =0; i<= data.length; i++){
+      if(data[i]){
+        values.push(data[i])
+      }
+    }
+    return values
   }
 }
 
@@ -1049,12 +1768,96 @@ class ProfileUseCase {
 
 export { ProfileUseCase };
 
-// File: prisma/migrations/20240602214810_init/migration.sql
+// File: src/useCases/Profile/types/index.d.ts
+export interface IFilterAthletesParams {
+  sex?: UserSexOptions;
+  positions?: string ;
+  ageMin?: number;
+  ageMax?: number;
+  status?: AthleteStatusOptions;
+  country?: CountriesOptions;
+  page: number;
+  items?: number;
+  id?: string
+}
+// File: src/useCases/Sports/dto/CreateSports.dto.ts
+import { IsNotEmpty, IsString } from 'class-validator';
+
+export class CreateSportsDto {
+
+  // Add other properties as needed
+}
+
+// File: src/useCases/Sports/dto/UpdateSports.dto.ts
+import { CreateSportsDto } from "./CreateSports.dto";
+
+type CreateSportsDtoPartial = Partial<CreateSportsDto>
+export class UpdateSportsDto implements CreateSportsDtoPartial {}
+
+// File: src/useCases/Sports/dto/index.ts
+import { CreateSportsDto } from "./CreateSports.dto";
+import { UpdateSportsDto } from "./UpdateSports.dto";
+
+export { CreateSportsDto, UpdateSportsDto }
+
+// File: src/useCases/Sports/sports.controller.ts
+import { Controller, Post, Get, Put, Delete } from "../../decorators";
+import { NextFunction, Request, Response } from "express";
+import { CreateSportsDto, UpdateSportsDto } from "./dto";
+import { SportsUseCase } from "./sports.service";
+
+@Controller('/sports', '1')
+export class SportsController {
+
+
+  @Get("/get_sports_position")
+  async handleReadSports(request: Request, response: Response, next: NextFunction) {
+    try{
+      const {sport_id} = request.query
+      const data = await new SportsUseCase().executeReadSportsPositions(Number(sport_id))
+      response.status(200).json(data)
+    }catch(err){
+      next(err)
+    }
+
+  }
+}
+
+// File: src/useCases/Sports/sports.route.ts
+import { Route } from "../../decorators/module.decorator";
+import { SportsController } from "./sports.controller";
+
+@Route([SportsController])
+export class SportsRoutes {
+  // Add route logic here if needed
+}
+
+// File: src/useCases/Sports/sports.service.ts
+import { PrismaService } from "../../providers/prisma/prismaClient";
+
+class SportsUseCase {
+  private readonly prisma: PrismaService
+  constructor(){
+    this.prisma = new PrismaService();
+  }
+  async executeReadSportsPositions(sport_id: number) {
+    const sportsPositions = await this.prisma.client.sportPosition.findMany({
+      where: {
+        sport_id: sport_id
+      }
+    })
+    return sportsPositions
+  }
+}
+
+export { SportsUseCase };
+
+// File: prisma/migrations/20240608111849_new_migration/migration.sql
 -- CreateEnum
 CREATE TYPE "UserSexOptions" AS ENUM ('NOT_SPECIEFIED', 'MALE', 'FEMALE');
 
 -- CreateEnum
-CREATE TYPE "NationalityOptions" AS ENUM ('NOT_SPECIEFIED', 'INDIAN', 'MOZAMBICAN', 'PORTUGUESE', 'ARGENTINIAN');
+CREATE TYPE "CountriesOptions" AS ENUM ('NOT_SPECIEFIED', 'AFGHANISTAN', 'ALBANIA', 'ALGERIA', 'ANDORRA', 'ANGOLA', 'ANTIGUA_AND_BARBUDA', 'ARGENTINA', 'ARMENIA', 'AUSTRALIA', 'AUSTRIA', 'AZERBAIJAN', 'BAHAMAS', 'BAHRAIN', 'BANGLADESH', 'BARBADOS', 'BELARUS', 'BELGIUM', 'BELIZE', 'BENIN', 'BHUTAN', 'BOLIVIA', 'BOSNIA_AND_HERZEGOVINA', 'BOTSWANA', 'BRAZIL', 'BRUNEI', 'BULGARIA', 'BURKINA_FASO', 'BURUNDI', 'CABO_VERDE', 'CAMBODIA', 'CAMEROON', 'CANADA', 'CENTRAL_AFRICAN_REPUBLIC', 'CHAD', 'CHILE', 'CHINA', 'COLOMBIA', 'COMOROS', 'CONGO_DEMOCRATIC_REPUBLIC', 'CONGO_REPUBLIC', 'COSTA_RICA', 'CROATIA', 'CUBA', 'CYPRUS', 'CZECH_REPUBLIC', 'DENMARK', 'DJIBOUTI', 'DOMINICA', 'DOMINICAN_REPUBLIC', 'EAST_TIMOR', 'ECUADOR', 'EGYPT', 'EL_SALVADOR', 'EQUATORIAL_GUINEA', 'ERITREA', 'ESTONIA', 'ESWATINI', 'ETHIOPIA', 'FIJI', 'FINLAND', 'FRANCE', 'GABON', 'GAMBIA', 'GEORGIA', 'GERMANY', 'GHANA', 'GREECE', 'GRENADA', 'GUATEMALA', 'GUINEA', 'GUINEA_BISSAU', 'GUYANA', 'HAITI', 'HONDURAS', 'HUNGARY', 'ICELAND', 'INDIA', 'INDONESIA', 'IRAN', 'IRAQ', 'IRELAND', 'ISRAEL', 'ITALY', 'IVORY_COAST', 'JAMAICA', 'JAPAN', 'JORDAN', 'KAZAKHSTAN', 'KENYA', 'KIRIBATI', 'KOSOVO', 'KUWAIT', 'KYRGYZSTAN', 'LAOS', 'LATVIA', 'LEBANON', 'LESOTHO', 'LIBERIA', 'LIBYA', 'LIECHTENSTEIN', 'LITHUANIA', 'LUXEMBOURG', 'MADAGASCAR', 'MALAWI', 'MALAYSIA', 'MALDIVES', 'MALI', 'MALTA', 'MARSHALL_ISLANDS', 'MAURITANIA', 'MAURITIUS', 'MEXICO', 'MICRONESIA', 'MOLDOVA', 'MONACO', 'MONGOLIA', 'MONTENEGRO', 'MOROCCO', 'MOZAMBIQUE', 'MYANMAR', 'NAMIBIA', 'NAURU', 'NEPAL', 'NETHERLANDS', 'NEW_ZEALAND', 'NICARAGUA', 'NIGER', 'NIGERIA', 'NORTH_KOREA', 'NORTH_MACEDONIA', 'NORWAY', 'OMAN', 'PAKISTAN', 'PALAU', 'PALESTINE', 'PANAMA', 'PAPUA_NEW_GUINEA', 'PARAGUAY', 'PERU', 'PHILIPPINES', 'POLAND', 'PORTUGAL', 'QATAR', 'ROMANIA', 'RUSSIA', 'RWANDA', 'SAINT_KITTS_AND_NEVIS', 'SAINT_LUCIA', 'SAINT_VINCENT_AND_THE_GRENADINES', 'SAMOA', 'SAN_MARINO', 'SAO_TOME_AND_PRINCIPE', 'SAUDI_ARABIA', 'SENEGAL', 'SERBIA', 'SEYCHELLES', 'SIERRA_LEONE', 'SINGAPORE', 'SLOVAKIA', 'SLOVENIA', 'SOLOMON_ISLANDS', 'SOMALIA', 'SOUTH_AFRICA', 'SOUTH_KOREA', 'SOUTH_SUDAN', 'SPAIN', 'SRI_LANKA', 'SUDAN', 'SURINAME', 'SWEDEN', 'SWITZERLAND', 'SYRIA', 'TAIWAN', 'TAJIKISTAN', 'TANZANIA', 'THAILAND', 'TOGO', 'TONGA', 'TRINIDAD_AND_TOBAGO', 'TUNISIA', 'TURKEY', 'TURKMENISTAN', 'TUVALU', 'UGANDA', 'UKRAINE', 'UNITED_ARAB_EMIRATES', 'UNITED_KINGDOM', 'UNITED_STATES', 'URUGUAY', 'UZBEKISTAN', 'VANUATU', 'VATICAN_CITY', 'VENEZUELA', 'VIETNAM', 'YEMEN', 'ZAMBIA', 'ZIMBABWE');
 
 -- CreateEnum
 CREATE TYPE "MediaOptions" AS ENUM ('VIDEO', 'IMAGE');
@@ -1072,53 +1875,75 @@ CREATE TYPE "AthleteStatusOptions" AS ENUM ('NOT_SPECIEFIED', 'PROFESSIONAL', 'A
 CREATE TYPE "UserAccountStatusOptions" AS ENUM ('ACTIVE', 'INATIVE');
 
 -- CreateTable
-CREATE TABLE "User" (
+CREATE TABLE "Profiles" (
     "id" SERIAL NOT NULL,
     "public_id" TEXT NOT NULL,
     "first_name" TEXT NOT NULL,
     "last_name" TEXT NOT NULL,
-    "age" INTEGER NOT NULL,
     "email" TEXT NOT NULL,
-    "password" TEXT NOT NULL,
     "sex" "UserSexOptions" NOT NULL DEFAULT 'NOT_SPECIEFIED',
-    "birt_date" TIMESTAMP(3) NOT NULL,
+    "birth_date" TIMESTAMP(3) NOT NULL,
     "account_status" "UserAccountStatusOptions" NOT NULL DEFAULT 'INATIVE',
-    "nationality" "NationalityOptions" NOT NULL DEFAULT 'NOT_SPECIEFIED',
-    "citzenship" "NationalityOptions" NOT NULL DEFAULT 'NOT_SPECIEFIED',
-    "sport_id" INTEGER,
+    "nationality" "CountriesOptions" NOT NULL DEFAULT 'NOT_SPECIEFIED',
+    "sport_id" INTEGER NOT NULL,
     "phone" TEXT,
     "mobile" TEXT,
+    "affiliations" TEXT,
     "address" TEXT,
 
-    CONSTRAINT "User_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "Profiles_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "UserAthleteProfile" (
     "id" SERIAL NOT NULL,
-    "birth_country" "NationalityOptions" NOT NULL DEFAULT 'NOT_SPECIEFIED',
-    "citzenship" TEXT NOT NULL,
+    "profile_id" INTEGER NOT NULL,
+    "citzenship" "CountriesOptions"[] DEFAULT ARRAY['NOT_SPECIEFIED']::"CountriesOptions"[],
+    "age" INTEGER NOT NULL,
     "height" DOUBLE PRECISION NOT NULL,
     "height_metric" "HeightOptions" NOT NULL DEFAULT 'CM',
     "weight" DOUBLE PRECISION NOT NULL,
     "weight_metric" "WeightOptions" NOT NULL DEFAULT 'KG',
-    "address" TEXT NOT NULL,
-    "phone" TEXT NOT NULL,
-    "mobile" TEXT NOT NULL,
     "status" "AthleteStatusOptions" NOT NULL DEFAULT 'NOT_SPECIEFIED',
     "leagues_played" TEXT,
+    "sport_position_id" INTEGER,
+    "league_played" TEXT,
 
     CONSTRAINT "UserAthleteProfile_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
+CREATE TABLE "UserCareerStatistics" (
+    "id" SERIAL NOT NULL,
+    "athlete_id" INTEGER NOT NULL,
+    "game_appearances" INTEGER NOT NULL DEFAULT 0,
+    "minutes_played" INTEGER NOT NULL DEFAULT 0,
+    "game_started" INTEGER NOT NULL DEFAULT 0,
+    "field_goals" INTEGER NOT NULL DEFAULT 0,
+    "attribute_update_at" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "UserCareerStatistics_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "UserSportsAttributes" (
+    "athlete_id" INTEGER NOT NULL,
+    "sport_attributes_id" INTEGER NOT NULL,
+
+    CONSTRAINT "UserSportsAttributes_pkey" PRIMARY KEY ("athlete_id","sport_attributes_id")
+);
+
+-- CreateTable
+CREATE TABLE "SportPosition" (
+    "id" INTEGER NOT NULL,
+    "sport_id" INTEGER NOT NULL,
+    "name" TEXT NOT NULL
+);
+
+-- CreateTable
 CREATE TABLE "UserScoutProfile" (
     "id" SERIAL NOT NULL,
-    "address" TEXT NOT NULL,
-    "phone" TEXT NOT NULL,
-    "mobile" TEXT NOT NULL,
-    "organization_id" INTEGER NOT NULL,
-    "affiliations" TEXT[],
+    "profile_id" INTEGER NOT NULL,
 
     CONSTRAINT "UserScoutProfile_pkey" PRIMARY KEY ("id")
 );
@@ -1129,7 +1954,7 @@ CREATE TABLE "UserGuardian" (
     "name" TEXT NOT NULL,
     "relationship" TEXT NOT NULL,
     "profile_id" INTEGER NOT NULL,
-    "concent_form" TEXT NOT NULL,
+    "consent_form" TEXT NOT NULL,
 
     CONSTRAINT "UserGuardian_pkey" PRIMARY KEY ("id")
 );
@@ -1155,12 +1980,11 @@ CREATE TABLE "SportsAttributes" (
 -- CreateTable
 CREATE TABLE "UserOrganization" (
     "id" SERIAL NOT NULL,
-    "public_id" TEXT NOT NULL,
-    "name" TEXT NOT NULL,
-    "email" TEXT NOT NULL,
-    "phone" TEXT,
-    "mobile" TEXT,
-    "document_url" TEXT NOT NULL,
+    "org_name" TEXT,
+    "org_email" TEXT,
+    "org_phone" TEXT,
+    "org_mobile" TEXT,
+    "org_document_url" TEXT,
     "profile_id" INTEGER NOT NULL,
 
     CONSTRAINT "UserOrganization_pkey" PRIMARY KEY ("id")
@@ -1169,7 +1993,7 @@ CREATE TABLE "UserOrganization" (
 -- CreateTable
 CREATE TABLE "UserMedia" (
     "id" SERIAL NOT NULL,
-    "public_id" TEXT NOT NULL,
+    "athlete_id" INTEGER NOT NULL,
     "name" TEXT NOT NULL,
     "type" "MediaOptions" NOT NULL,
     "media_url" TEXT NOT NULL,
@@ -1186,109 +2010,7 @@ CREATE TABLE "UserAppointments" (
     "duration" TEXT NOT NULL,
     "scheduled" TIMESTAMP(3) NOT NULL,
 
-    CONSTRAINT "UserAppointments_pkey" PRIMARY KEY ("athlete_id","scout_id")
-);
-
--- CreateIndex
-CREATE UNIQUE INDEX "User_public_id_key" ON "User"("public_id");
-
--- CreateIndex
-CREATE UNIQUE INDEX "Sports_public_id_key" ON "Sports"("public_id");
-
--- CreateIndex
-CREATE UNIQUE INDEX "UserOrganization_public_id_key" ON "UserOrganization"("public_id");
-
--- CreateIndex
-CREATE UNIQUE INDEX "UserOrganization_profile_id_key" ON "UserOrganization"("profile_id");
-
--- CreateIndex
-CREATE UNIQUE INDEX "UserMedia_public_id_key" ON "UserMedia"("public_id");
-
--- AddForeignKey
-ALTER TABLE "User" ADD CONSTRAINT "User_sport_id_fkey" FOREIGN KEY ("sport_id") REFERENCES "Sports"("id") ON DELETE SET NULL ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "UserGuardian" ADD CONSTRAINT "UserGuardian_profile_id_fkey" FOREIGN KEY ("profile_id") REFERENCES "UserAthleteProfile"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "SportsAttributes" ADD CONSTRAINT "SportsAttributes_sport_id_fkey" FOREIGN KEY ("sport_id") REFERENCES "Sports"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "UserOrganization" ADD CONSTRAINT "UserOrganization_profile_id_fkey" FOREIGN KEY ("profile_id") REFERENCES "UserScoutProfile"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "UserAppointments" ADD CONSTRAINT "UserAppointments_athlete_id_fkey" FOREIGN KEY ("athlete_id") REFERENCES "UserAthleteProfile"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "UserAppointments" ADD CONSTRAINT "UserAppointments_scout_id_fkey" FOREIGN KEY ("scout_id") REFERENCES "UserScoutProfile"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
-// File: prisma/migrations/20240603172155_updates/migration.sql
-/*
-  Warnings:
-
-  - The `nationality` column on the `User` table would be dropped and recreated. This will lead to data loss if there is data in the column.
-  - The `citzenship` column on the `User` table would be dropped and recreated. This will lead to data loss if there is data in the column.
-  - The `birth_country` column on the `UserAthleteProfile` table would be dropped and recreated. This will lead to data loss if there is data in the column.
-
-*/
--- CreateEnum
-CREATE TYPE "CountriesOptions" AS ENUM ('NOT_SPECIEFIED', 'AFGHANISTAN', 'ALBANIA', 'ALGERIA', 'ANDORRA', 'ANGOLA', 'ANTIGUA_AND_BARBUDA', 'ARGENTINA', 'ARMENIA', 'AUSTRALIA', 'AUSTRIA', 'AZERBAIJAN', 'BAHAMAS', 'BAHRAIN', 'BANGLADESH', 'BARBADOS', 'BELARUS', 'BELGIUM', 'BELIZE', 'BENIN', 'BHUTAN', 'BOLIVIA', 'BOSNIA_AND_HERZEGOVINA', 'BOTSWANA', 'BRAZIL', 'BRUNEI', 'BULGARIA', 'BURKINA_FASO', 'BURUNDI', 'CABO_VERDE', 'CAMBODIA', 'CAMEROON', 'CANADA', 'CENTRAL_AFRICAN_REPUBLIC', 'CHAD', 'CHILE', 'CHINA', 'COLOMBIA', 'COMOROS', 'CONGO_DEMOCRATIC_REPUBLIC', 'CONGO_REPUBLIC', 'COSTA_RICA', 'CROATIA', 'CUBA', 'CYPRUS', 'CZECH_REPUBLIC', 'DENMARK', 'DJIBOUTI', 'DOMINICA', 'DOMINICAN_REPUBLIC', 'EAST_TIMOR', 'ECUADOR', 'EGYPT', 'EL_SALVADOR', 'EQUATORIAL_GUINEA', 'ERITREA', 'ESTONIA', 'ESWATINI', 'ETHIOPIA', 'FIJI', 'FINLAND', 'FRANCE', 'GABON', 'GAMBIA', 'GEORGIA', 'GERMANY', 'GHANA', 'GREECE', 'GRENADA', 'GUATEMALA', 'GUINEA', 'GUINEA_BISSAU', 'GUYANA', 'HAITI', 'HONDURAS', 'HUNGARY', 'ICELAND', 'INDIA', 'INDONESIA', 'IRAN', 'IRAQ', 'IRELAND', 'ISRAEL', 'ITALY', 'IVORY_COAST', 'JAMAICA', 'JAPAN', 'JORDAN', 'KAZAKHSTAN', 'KENYA', 'KIRIBATI', 'KOSOVO', 'KUWAIT', 'KYRGYZSTAN', 'LAOS', 'LATVIA', 'LEBANON', 'LESOTHO', 'LIBERIA', 'LIBYA', 'LIECHTENSTEIN', 'LITHUANIA', 'LUXEMBOURG', 'MADAGASCAR', 'MALAWI', 'MALAYSIA', 'MALDIVES', 'MALI', 'MALTA', 'MARSHALL_ISLANDS', 'MAURITANIA', 'MAURITIUS', 'MEXICO', 'MICRONESIA', 'MOLDOVA', 'MONACO', 'MONGOLIA', 'MONTENEGRO', 'MOROCCO', 'MOZAMBIQUE', 'MYANMAR', 'NAMIBIA', 'NAURU', 'NEPAL', 'NETHERLANDS', 'NEW_ZEALAND', 'NICARAGUA', 'NIGER', 'NIGERIA', 'NORTH_KOREA', 'NORTH_MACEDONIA', 'NORWAY', 'OMAN', 'PAKISTAN', 'PALAU', 'PALESTINE', 'PANAMA', 'PAPUA_NEW_GUINEA', 'PARAGUAY', 'PERU', 'PHILIPPINES', 'POLAND', 'PORTUGAL', 'QATAR', 'ROMANIA', 'RUSSIA', 'RWANDA', 'SAINT_KITTS_AND_NEVIS', 'SAINT_LUCIA', 'SAINT_VINCENT_AND_THE_GRENADINES', 'SAMOA', 'SAN_MARINO', 'SAO_TOME_AND_PRINCIPE', 'SAUDI_ARABIA', 'SENEGAL', 'SERBIA', 'SEYCHELLES', 'SIERRA_LEONE', 'SINGAPORE', 'SLOVAKIA', 'SLOVENIA', 'SOLOMON_ISLANDS', 'SOMALIA', 'SOUTH_AFRICA', 'SOUTH_KOREA', 'SOUTH_SUDAN', 'SPAIN', 'SRI_LANKA', 'SUDAN', 'SURINAME', 'SWEDEN', 'SWITZERLAND', 'SYRIA', 'TAIWAN', 'TAJIKISTAN', 'TANZANIA', 'THAILAND', 'TOGO', 'TONGA', 'TRINIDAD_AND_TOBAGO', 'TUNISIA', 'TURKEY', 'TURKMENISTAN', 'TUVALU', 'UGANDA', 'UKRAINE', 'UNITED_ARAB_EMIRATES', 'UNITED_KINGDOM', 'UNITED_STATES', 'URUGUAY', 'UZBEKISTAN', 'VANUATU', 'VATICAN_CITY', 'VENEZUELA', 'VIETNAM', 'YEMEN', 'ZAMBIA', 'ZIMBABWE');
-
--- AlterTable
-ALTER TABLE "User" DROP COLUMN "nationality",
-ADD COLUMN     "nationality" "CountriesOptions" NOT NULL DEFAULT 'NOT_SPECIEFIED',
-DROP COLUMN "citzenship",
-ADD COLUMN     "citzenship" "CountriesOptions" NOT NULL DEFAULT 'NOT_SPECIEFIED';
-
--- AlterTable
-ALTER TABLE "UserAthleteProfile" DROP COLUMN "birth_country",
-ADD COLUMN     "birth_country" "CountriesOptions" NOT NULL DEFAULT 'NOT_SPECIEFIED';
-
--- DropEnum
-DROP TYPE "NationalityOptions";
-
-// File: prisma/migrations/20240603201824_updates/migration.sql
-/*
-  Warnings:
-
-  - You are about to drop the `User` table. If the table is not empty, all the data it contains will be lost.
-  - A unique constraint covering the columns `[profile_id]` on the table `UserAthleteProfile` will be added. If there are existing duplicate values, this will fail.
-  - A unique constraint covering the columns `[profile_id]` on the table `UserScoutProfile` will be added. If there are existing duplicate values, this will fail.
-  - Added the required column `profile_id` to the `UserAthleteProfile` table without a default value. This is not possible if the table is not empty.
-  - Added the required column `profile_id` to the `UserScoutProfile` table without a default value. This is not possible if the table is not empty.
-
-*/
--- DropForeignKey
-ALTER TABLE "User" DROP CONSTRAINT "User_sport_id_fkey";
-
--- AlterTable
-ALTER TABLE "UserAthleteProfile" ADD COLUMN     "profile_id" INTEGER NOT NULL;
-
--- AlterTable
-ALTER TABLE "UserScoutProfile" ADD COLUMN     "profile_id" INTEGER NOT NULL;
-
--- DropTable
-DROP TABLE "User";
-
--- CreateTable
-CREATE TABLE "Profiles" (
-    "id" SERIAL NOT NULL,
-    "public_id" TEXT NOT NULL,
-    "first_name" TEXT NOT NULL,
-    "last_name" TEXT NOT NULL,
-    "age" INTEGER NOT NULL,
-    "email" TEXT NOT NULL,
-    "sex" "UserSexOptions" NOT NULL DEFAULT 'NOT_SPECIEFIED',
-    "birt_date" TIMESTAMP(3) NOT NULL,
-    "account_status" "UserAccountStatusOptions" NOT NULL DEFAULT 'INATIVE',
-    "nationality" "CountriesOptions" NOT NULL DEFAULT 'NOT_SPECIEFIED',
-    "citzenship" "CountriesOptions" NOT NULL DEFAULT 'NOT_SPECIEFIED',
-    "sport_id" INTEGER,
-    "phone" TEXT,
-    "mobile" TEXT,
-    "address" TEXT,
-
-    CONSTRAINT "Profiles_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "UserAppointments_pkey" PRIMARY KEY ("athlete_id","scout_id","scheduled")
 );
 
 -- CreateIndex
@@ -1298,86 +2020,71 @@ CREATE UNIQUE INDEX "Profiles_public_id_key" ON "Profiles"("public_id");
 CREATE UNIQUE INDEX "UserAthleteProfile_profile_id_key" ON "UserAthleteProfile"("profile_id");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "UserCareerStatistics_athlete_id_key" ON "UserCareerStatistics"("athlete_id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "SportPosition_id_key" ON "SportPosition"("id");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "UserScoutProfile_profile_id_key" ON "UserScoutProfile"("profile_id");
 
+-- CreateIndex
+CREATE UNIQUE INDEX "Sports_public_id_key" ON "Sports"("public_id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "UserOrganization_profile_id_key" ON "UserOrganization"("profile_id");
+
 -- AddForeignKey
-ALTER TABLE "Profiles" ADD CONSTRAINT "Profiles_sport_id_fkey" FOREIGN KEY ("sport_id") REFERENCES "Sports"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "Profiles" ADD CONSTRAINT "Profiles_sport_id_fkey" FOREIGN KEY ("sport_id") REFERENCES "Sports"("id") ON DELETE NO ACTION ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "UserAthleteProfile" ADD CONSTRAINT "UserAthleteProfile_profile_id_fkey" FOREIGN KEY ("profile_id") REFERENCES "Profiles"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "UserScoutProfile" ADD CONSTRAINT "UserScoutProfile_profile_id_fkey" FOREIGN KEY ("profile_id") REFERENCES "Profiles"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
-// File: prisma/migrations/20240604064346_init/migration.sql
-/*
-  Warnings:
-
-  - You are about to drop the column `age` on the `Profiles` table. All the data in the column will be lost.
-  - Added the required column `age` to the `UserAthleteProfile` table without a default value. This is not possible if the table is not empty.
-
-*/
--- AlterTable
-ALTER TABLE "Profiles" DROP COLUMN "age";
-
--- AlterTable
-ALTER TABLE "UserAthleteProfile" ADD COLUMN     "age" INTEGER NOT NULL;
-
-// File: prisma/migrations/20240605200354_remove_adress_mobile_and_phone/migration.sql
-/*
-  Warnings:
-
-  - You are about to drop the column `address` on the `UserAthleteProfile` table. All the data in the column will be lost.
-  - You are about to drop the column `mobile` on the `UserAthleteProfile` table. All the data in the column will be lost.
-  - You are about to drop the column `phone` on the `UserAthleteProfile` table. All the data in the column will be lost.
-  - You are about to drop the column `address` on the `UserScoutProfile` table. All the data in the column will be lost.
-  - You are about to drop the column `mobile` on the `UserScoutProfile` table. All the data in the column will be lost.
-  - You are about to drop the column `phone` on the `UserScoutProfile` table. All the data in the column will be lost.
-
-*/
--- AlterTable
-ALTER TABLE "UserAthleteProfile" DROP COLUMN "address",
-DROP COLUMN "mobile",
-DROP COLUMN "phone";
-
--- AlterTable
-ALTER TABLE "UserScoutProfile" DROP COLUMN "address",
-DROP COLUMN "mobile",
-DROP COLUMN "phone";
-
-// File: prisma/migrations/20240605201822_changed_sport_id_to_mandatory/migration.sql
-/*
-  Warnings:
-
-  - Made the column `sport_id` on table `Profiles` required. This step will fail if there are existing NULL values in that column.
-
-*/
--- DropForeignKey
-ALTER TABLE "Profiles" DROP CONSTRAINT "Profiles_sport_id_fkey";
-
--- AlterTable
-ALTER TABLE "Profiles" ALTER COLUMN "sport_id" SET NOT NULL;
+ALTER TABLE "UserAthleteProfile" ADD CONSTRAINT "UserAthleteProfile_sport_position_id_fkey" FOREIGN KEY ("sport_position_id") REFERENCES "SportPosition"("id") ON DELETE NO ACTION ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Profiles" ADD CONSTRAINT "Profiles_sport_id_fkey" FOREIGN KEY ("sport_id") REFERENCES "Sports"("id") ON DELETE NO ACTION ON UPDATE CASCADE;
+ALTER TABLE "UserCareerStatistics" ADD CONSTRAINT "UserCareerStatistics_athlete_id_fkey" FOREIGN KEY ("athlete_id") REFERENCES "UserAthleteProfile"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
-// File: prisma/migrations/20240605203146_changed_user_scout_logic/migration.sql
--- AlterTable
-ALTER TABLE "UserScoutProfile" ALTER COLUMN "organization_id" DROP NOT NULL;
+-- AddForeignKey
+ALTER TABLE "UserSportsAttributes" ADD CONSTRAINT "UserSportsAttributes_athlete_id_fkey" FOREIGN KEY ("athlete_id") REFERENCES "UserAthleteProfile"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
-// File: prisma/migrations/20240605203415_birth_country_and_citzenship/migration.sql
+-- AddForeignKey
+ALTER TABLE "UserSportsAttributes" ADD CONSTRAINT "UserSportsAttributes_sport_attributes_id_fkey" FOREIGN KEY ("sport_attributes_id") REFERENCES "SportsAttributes"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "SportPosition" ADD CONSTRAINT "SportPosition_sport_id_fkey" FOREIGN KEY ("sport_id") REFERENCES "Sports"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "UserScoutProfile" ADD CONSTRAINT "UserScoutProfile_profile_id_fkey" FOREIGN KEY ("profile_id") REFERENCES "Profiles"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "UserGuardian" ADD CONSTRAINT "UserGuardian_profile_id_fkey" FOREIGN KEY ("profile_id") REFERENCES "UserAthleteProfile"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "SportsAttributes" ADD CONSTRAINT "SportsAttributes_sport_id_fkey" FOREIGN KEY ("sport_id") REFERENCES "Sports"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "UserOrganization" ADD CONSTRAINT "UserOrganization_profile_id_fkey" FOREIGN KEY ("profile_id") REFERENCES "Profiles"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "UserMedia" ADD CONSTRAINT "UserMedia_athlete_id_fkey" FOREIGN KEY ("athlete_id") REFERENCES "UserAthleteProfile"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "UserAppointments" ADD CONSTRAINT "UserAppointments_athlete_id_fkey" FOREIGN KEY ("athlete_id") REFERENCES "UserAthleteProfile"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "UserAppointments" ADD CONSTRAINT "UserAppointments_scout_id_fkey" FOREIGN KEY ("scout_id") REFERENCES "UserScoutProfile"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+// File: prisma/migrations/20240609001232_new_migration/migration.sql
 /*
   Warnings:
 
-  - You are about to drop the column `citzenship` on the `Profiles` table. All the data in the column will be lost.
-  - You are about to drop the column `birth_country` on the `UserAthleteProfile` table. All the data in the column will be lost.
+  - A unique constraint covering the columns `[email]` on the table `Profiles` will be added. If there are existing duplicate values, this will fail.
 
 */
--- AlterTable
-ALTER TABLE "Profiles" DROP COLUMN "citzenship";
-
--- AlterTable
-ALTER TABLE "UserAthleteProfile" DROP COLUMN "birth_country";
+-- CreateIndex
+CREATE UNIQUE INDEX "Profiles_email_key" ON "Profiles"("email");
 
 // File: prisma/migrations/migration_lock.toml
 # Please do not edit this file manually
@@ -1391,7 +2098,8 @@ provider = "postgresql"
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "darwin-arm64", "linux-musl-arm64-openssl-3.0.x", "linux-musl-openssl-3.0.x"]
 }
 
 datasource db {
@@ -1402,17 +2110,19 @@ datasource db {
 
 model Profiles {
   id             Int                      @id @default(autoincrement())
-  public_id      String                   @unique @default(uuid())
+  public_id      String                   @unique
   first_name     String
   last_name      String
-  email          String
+  email          String                   @unique
   sex            UserSexOptions           @default(NOT_SPECIEFIED)
-  birt_date      DateTime
+  birth_date     DateTime
   account_status UserAccountStatusOptions @default(INATIVE)
   nationality    CountriesOptions         @default(NOT_SPECIEFIED)
   sport_id       Int
   phone          String?
   mobile         String?
+  organization   UserOrganization?
+  affiliations   String?
   address        String?
   sport          Sports?                  @relation(fields: [sport_id], references: [id], onDelete: NoAction)
   athlete        UserAthleteProfile?
@@ -1420,29 +2130,60 @@ model Profiles {
 }
 
 model UserAthleteProfile {
-  id             Int                  @id @default(autoincrement())
-  profile_id     Int                  @unique
-  profile        Profiles             @relation(fields: [profile_id], references: [id], onDelete: Cascade)
-  citzenship     String
-  age            Int
-  height         Float
-  height_metric  HeightOptions        @default(CM)
-  weight         Float
-  weight_metric  WeightOptions        @default(KG)
-  status         AthleteStatusOptions @default(NOT_SPECIEFIED)
-  leagues_played String?
-  guardians      UserGuardian[]
-  appointmenst   UserAppointments[]
+  id                Int                    @id @default(autoincrement())
+  profile_id        Int                    @unique
+  profile           Profiles               @relation(fields: [profile_id], references: [id], onDelete: Cascade)
+  citzenship        CountriesOptions[]     @default([NOT_SPECIEFIED])
+  age               Int
+  height            Float
+  height_metric     HeightOptions          @default(CM)
+  weight            Float
+  weight_metric     WeightOptions          @default(KG)
+  status            AthleteStatusOptions   @default(NOT_SPECIEFIED)
+  leagues_played    String?
+  guardians         UserGuardian[]
+  appointmenst      UserAppointments[]
+  media             UserMedia[]
+  career_statistics UserCareerStatistics?
+  sport_position_id Int?
+  league_played     String?
+  sport_position    SportPosition?         @relation(fields: [sport_position_id], references: [id], onDelete: NoAction)
+  sport_attributes  UserSportsAttributes[]
+}
+
+model UserCareerStatistics {
+  id                  Int                @id @default(autoincrement())
+  athlete_id          Int                @unique
+  athlete             UserAthleteProfile @relation(fields: [athlete_id], references: [id], onDelete: Cascade)
+  game_appearances    Int                @default(0)
+  minutes_played      Int                @default(0)
+  game_started        Int                @default(0)
+  field_goals         Int                @default(0)
+  attribute_update_at DateTime           @updatedAt
+}
+
+model UserSportsAttributes {
+  athlete_id          Int
+  athlete             UserAthleteProfile @relation(fields: [athlete_id], references: [id])
+  attributes          SportsAttributes   @relation(fields: [sport_attributes_id], references: [id])
+  sport_attributes_id Int
+
+  @@id([athlete_id, sport_attributes_id])
+}
+
+model SportPosition {
+  id       Int                  @unique
+  sport_id Int
+  sport    Sports               @relation(fields: [sport_id], references: [id])
+  name     String
+  athlete  UserAthleteProfile[]
 }
 
 model UserScoutProfile {
-  id              Int                @id @default(autoincrement())
-  profile_id      Int                @unique
-  profile         Profiles           @relation(fields: [profile_id], references: [id], onDelete: Cascade)
-  organization_id Int?
-  organization    UserOrganization?
-  affiliations    String[]
-  appointmenst    UserAppointments[]
+  id           Int                @id @default(autoincrement())
+  profile_id   Int                @unique
+  profile      Profiles           @relation(fields: [profile_id], references: [id], onDelete: Cascade)
+  appointments UserAppointments[]
 }
 
 model UserGuardian {
@@ -1451,42 +2192,44 @@ model UserGuardian {
   relationship String
   profile_id   Int
   profile      UserAthleteProfile @relation(fields: [profile_id], references: [id], onDelete: Cascade)
-  concent_form String
+  consent_form String
 }
 
 model Sports {
-  id        Int                @id @default(autoincrement())
-  public_id String             @unique @default(uuid())
-  name      String
-  attibutes SportsAttributes[]
-  user      Profiles[]
+  id             Int                @id @default(autoincrement())
+  public_id      String             @unique @default(uuid())
+  name           String
+  attibutes      SportsAttributes[]
+  sport_position SportPosition[]
+  user           Profiles[]
 }
 
 model SportsAttributes {
-  id       Int    @id @default(autoincrement())
+  id       Int                    @id @default(autoincrement())
   name     String
   sport_id Int
-  sport    Sports @relation(fields: [sport_id], references: [id], onDelete: Cascade)
+  sport    Sports                 @relation(fields: [sport_id], references: [id], onDelete: Cascade)
+  athlete  UserSportsAttributes[]
 }
 
 model UserOrganization {
-  id           Int              @id @default(autoincrement())
-  public_id    String           @unique @default(uuid())
-  name         String
-  email        String
-  phone        String?
-  mobile       String?
-  document_url String
-  profile_id   Int              @unique
-  profile      UserScoutProfile @relation(fields: [profile_id], references: [id], onDelete: Cascade)
+  id               Int      @id @default(autoincrement())
+  org_name         String?
+  org_email        String?
+  org_phone        String?
+  org_mobile       String?
+  org_document_url String?
+  profile_id       Int      @unique
+  profile          Profiles @relation(fields: [profile_id], references: [id], onDelete: Cascade)
 }
 
 model UserMedia {
-  id        Int          @id @default(autoincrement())
-  public_id String       @unique @default(uuid())
-  name      String
-  type      MediaOptions
-  media_url String
+  id         Int                @id @default(autoincrement())
+  athlete_id Int
+  athlete    UserAthleteProfile @relation(fields: [athlete_id], references: [id], onDelete: Cascade)
+  name       String
+  type       MediaOptions
+  media_url  String
 }
 
 model UserAppointments {
@@ -1499,7 +2242,7 @@ model UserAppointments {
   athlete     UserAthleteProfile @relation(fields: [athlete_id], references: [id], onDelete: Cascade)
   scout       UserScoutProfile   @relation(fields: [scout_id], references: [id], onDelete: Cascade)
 
-  @@id([athlete_id, scout_id])
+  @@id([athlete_id, scout_id, scheduled])
 }
 
 enum UserSexOptions {
