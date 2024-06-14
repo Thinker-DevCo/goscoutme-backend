@@ -14,7 +14,7 @@ import { ServerSocket } from "./providers/webSocket/webSocket";
 
 dotenv.config();
 const app = express();
-const server = createServer(app);
+
 
 const port = process.env.PORT || 3000;
 const appGlobalRoutesInstance = new AppGlobalRoutes();
@@ -27,6 +27,7 @@ appGlobalRoutesInstance.startModule(app);
 
 app.use(errorHandler);
 
+const server = createServer(app);
 const socket = new ServerSocket(server)
 server.listen(port);
 
