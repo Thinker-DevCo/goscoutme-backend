@@ -24,7 +24,9 @@ app.use(express.json());
 app.use(cors());
 appGlobalRoutesInstance.startModule(app);
 
-
+app.get("/healthz", (req, res) => {
+  return res.status(200)
+})
 app.use(errorHandler);
 
 const server = createServer(app);
