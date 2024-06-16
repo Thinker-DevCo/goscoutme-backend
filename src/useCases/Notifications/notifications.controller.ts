@@ -1,6 +1,7 @@
 import { Controller, Post, Get, Put, Delete } from "../../decorators";
 import { Request, Response } from "express";
 import { CreateNotificationsDto, UpdateNotificationsDto } from "./dto";
+import { NotificationsUseCase } from "./notifications.service";
 
 @Controller('/notifications', '1')
 export class NotificationsController {
@@ -18,8 +19,15 @@ export class NotificationsController {
 
   @Put("/:id")
   async handleUpdateNotifications(request: Request<{id: string}, {}, UpdateNotificationsDto>, response: Response) {
-    // Handle updating a resource by ID
-    return response.json({ message: "Update notifications" });
+    try{
+      const {id} = request.params;
+      await new NotificationsUseCase().executeUpdateNotifications(+id)
+      return response.json({message: "updated notifications"})
+    }catch(err){
+
+    }
+
+  
   }
 
   @Delete("/:id")

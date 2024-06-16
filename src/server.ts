@@ -6,7 +6,6 @@ import * as http from "http";
 import cors from "cors";
 import { AppGlobalRoutes } from "./modules";
 import { errorHandler } from "./middlewares/errorHandler";
-import { RedisService } from "./providers/redis/redisClient";
 import { createServer } from 'http';
 import { Server, Socket } from "socket.io";
 import { ServerSocket } from "./providers/webSocket/webSocket";

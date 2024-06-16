@@ -11,7 +11,6 @@ class AppointmentsUseCase {
     this.prisma = new PrismaService();
   }
   async executeCreateAppointments(scout_id: string, dto: CreateAppointmentsDto) {
-    console.log(scout_id)
     const scout = await this.prisma.client.userScoutProfile.findFirst({
       where: {
         profile: {
@@ -41,6 +40,12 @@ class AppointmentsUseCase {
     }) 
     
     await socket.publish(String(dto.athlete_id), JSON.stringify(appointments))
+    await this.prisma.client.notifications.create({
+      data: {
+        message:`${scout.profile_id} created appointment`,
+        profile_id: dto.athlete_id,
+      }
+    })
     return appointments
   }
 
@@ -78,6 +83,7 @@ class AppointmentsUseCase {
           ]
         }
       })  
+      
       return appointments
   }
 

@@ -1,4 +1,10 @@
+import { PrismaService } from "../../providers/prisma/prismaClient";
+
 class NotificationsUseCase {
+  private readonly prisma: PrismaService
+  constructor(){
+    this.prisma = new PrismaService();
+  }
   async executeSubscribeUser(user_id) {
 
   }
@@ -7,8 +13,15 @@ class NotificationsUseCase {
     // Implement the read use case logic here
   }
 
-  async executeUpdateNotifications() {
-    // Implement the update use case logic here
+  async executeUpdateNotifications(id: number) {
+    await this.prisma.client.notifications.updateMany({
+      where: {
+        profile_id: id
+      },
+      data: {
+        status: "VIEWED"
+      }
+    })
   }
 
   async executeDeleteNotifications() {
