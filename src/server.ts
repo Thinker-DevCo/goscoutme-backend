@@ -30,10 +30,10 @@ app.get("/", (req, res) => {
 app.use(errorHandler);
 
 const server = createServer(app);
-//const socket = new ServerSocket(server)
+const socket = new ServerSocket(server)
 app.listen(port);
 
-export { app, server};
+export { app, server, socket};
 
 
 
