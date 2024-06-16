@@ -7,10 +7,8 @@ import { socket } from "../../server";
 
 class AppointmentsUseCase {
   private readonly prisma: PrismaService
-  private readonly redis: RedisService
   constructor(){
     this.prisma = new PrismaService();
-    this.redis = new RedisService();
   }
   async executeCreateAppointments(scout_id: string, dto: CreateAppointmentsDto) {
     console.log(scout_id)
