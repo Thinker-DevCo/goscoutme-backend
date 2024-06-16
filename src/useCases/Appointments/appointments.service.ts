@@ -43,7 +43,7 @@ class AppointmentsUseCase {
     await this.prisma.client.notifications.create({
       data: {
         message:`${scout.profile_id} created appointment`,
-        profile_id: dto.athlete_id,
+        profile_id: athlete.profile_id,
       }
     })
     return appointments
