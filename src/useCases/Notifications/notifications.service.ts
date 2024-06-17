@@ -12,9 +12,12 @@ class NotificationsUseCase {
   async executeReadNotifications(id: number) {
     console.log(id)
     const notifications = await this.prisma.client.notifications.findMany({
+      take: 6,
       where: {
-        status: "OPEN",
         profile_id: id,
+      },
+      orderBy: {
+        created_at: "desc"
       }
     })
     return notifications
