@@ -11,7 +11,7 @@ export class NotificationsController {
     return response.json({ message: "Create notifications" });
   }
 
-  @Get("")
+  @Get("/get_user_notifications")
   async handleReadNotifications(request: Request, response: Response, next: NextFunction) {
     try{
       const {id} = request.query
