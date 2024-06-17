@@ -1,5 +1,5 @@
 import { Controller, Post, Get, Put, Delete } from "../../decorators";
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import { CreateNotificationsDto, UpdateNotificationsDto } from "./dto";
 import { NotificationsUseCase } from "./notifications.service";
 
@@ -12,9 +12,14 @@ export class NotificationsController {
   }
 
   @Get("")
-  async handleReadNotifications(request: Request, response: Response) {
-    // Handle reading a resource
-    return response.json({ message: "Read notifications" });
+  async handleReadNotifications(request: Request, response: Response, next: NextFunction) {
+    try{
+      const {id} = request.query
+      const notifications = await new NotificationsUseCase().executeReadNotifications(+id)
+      return response.status(200).json(notifications)
+    }catch(err){
+      next(err)
+    }
   }
 
   @Put("/:id")

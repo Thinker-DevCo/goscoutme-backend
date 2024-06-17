@@ -9,8 +9,13 @@ class NotificationsUseCase {
 
   }
 
-  async executeReadNotifications() {
-    // Implement the read use case logic here
+  async executeReadNotifications(id: number) {
+    const notifications = await this.prisma.client.notifications.findMany({
+      where: {
+        profile_id: id,
+      }
+    })
+    return notifications
   }
 
   async executeUpdateNotifications(id: number) {
