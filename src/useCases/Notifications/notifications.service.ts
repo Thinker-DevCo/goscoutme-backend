@@ -10,6 +10,7 @@ class NotificationsUseCase {
   }
 
   async executeReadNotifications(id: number) {
+    console.log(id)
     const notifications = await this.prisma.client.notifications.findMany({
       where: {
         status: "OPEN",
