@@ -172,7 +172,7 @@ model ScoutNotes {
   scout       UserScoutProfile   @relation(fields: [scout_id], references: [id], onDelete: Cascade)
   athlete     UserAthleteProfile @relation(fields: [athlete_id], references: [id], onDelete: Cascade)
   scout_notes String?
-  tag         tagOptions         @default(NONE)
+  color_tag   tagOptions         @default(NONE)
 
   @@id([scout_id, athlete_id])
 }
@@ -408,6 +408,7 @@ enum tagOptions {
   PURPLE
   GRAY
   NONE
+  WHITE
 }
 
 enum AthleteStatusOptions {
