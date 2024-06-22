@@ -56,6 +56,7 @@ model UserAthleteProfile {
   career_statistics UserCareerStatistics?
   sport_position_id Int?
   league_played     String?
+  scouts_notes      ScoutNotes[]
   sport_position    SportPosition?         @relation(fields: [sport_position_id], references: [id], onDelete: NoAction)
   sport_attributes  UserSportsAttributes[]
 }
@@ -102,6 +103,7 @@ model UserScoutProfile {
   id           Int                @id @default(autoincrement())
   profile_id   Int                @unique
   profile      Profiles           @relation(fields: [profile_id], references: [id], onDelete: Cascade)
+  scouts_notes ScoutNotes[]
   appointments UserAppointments[]
 }
 
@@ -162,6 +164,17 @@ model UserAppointments {
   scout       UserScoutProfile   @relation(fields: [scout_id], references: [id], onDelete: Cascade)
 
   @@id([athlete_id, scout_id, scheduled])
+}
+
+model ScoutNotes {
+  scout_id    Int
+  athlete_id  Int
+  scout       UserScoutProfile   @relation(fields: [scout_id], references: [id], onDelete: Cascade)
+  athlete     UserAthleteProfile @relation(fields: [athlete_id], references: [id], onDelete: Cascade)
+  scout_notes String?
+  tag         tagOptions         @default(NONE)
+
+  @@id([scout_id, athlete_id])
 }
 
 enum UserSexOptions {
@@ -384,6 +397,17 @@ enum HeightOptions {
 enum WeightOptions {
   KG
   LB
+}
+
+enum tagOptions {
+  RED
+  ORANGE
+  YELLOW
+  GREEN
+  BLUE
+  PURPLE
+  GRAY
+  NONE
 }
 
 enum AthleteStatusOptions {
