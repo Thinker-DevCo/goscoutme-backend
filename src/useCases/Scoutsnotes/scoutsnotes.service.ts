@@ -16,8 +16,7 @@ class ScoutsnotesUseCase {
       }
     })
     if(!scout) throw new NotFoundError(`There is no scout with the id ${scout_id} in the database`); 
-    const athlete = await this.prisma.client.userAthleteProfile.findFirst({
-      where:{
+    const athlete = await this.prisma.client.userAthleteProfile.findFirst({ where:{
         profile: {
           public_id: dto.athlete_id
         }
