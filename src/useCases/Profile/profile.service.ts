@@ -12,6 +12,7 @@ class ProfileUseCase {
   }
   async executeCreateProfile(dto: ICreateProfileDto, user_id: string) {
     await this.validateUser(dto)
+    console.log(user_id)
     const profile = await this.prisma.client.profiles.create({
       include: {
         sport: true,
@@ -66,7 +67,7 @@ class ProfileUseCase {
         }
       })
       return{
-        profile: profile,
+        profile: {...profile, athlete},
 
       }
     }else {
@@ -76,7 +77,7 @@ class ProfileUseCase {
         }
       })
       return{
-        profile: profile,
+        profile: {...profile, scout},
       }
     }
   }

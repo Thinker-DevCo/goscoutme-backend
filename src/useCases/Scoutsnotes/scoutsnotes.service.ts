@@ -33,13 +33,13 @@ class ScoutsnotesUseCase {
       },
       update: {
         scout_notes: dto.scout_notes,
-        tag: dto.tag
+        color_tag: dto.color_tag
       },
       create: {
         athlete_id: athlete.id,
         scout_id: scout.id,
         scout_notes: dto.scout_notes,
-        tag: dto.tag
+        color_tag: dto.color_tag
       }
     })
     return scoutsNotes
