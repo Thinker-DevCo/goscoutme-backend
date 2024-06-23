@@ -88,13 +88,14 @@ class ProfileUseCase {
       take: items,
       include: {
         profile: {include: {sport: true}},
-        sport_position: true
-      
+        sport_position: true,
+        _count: true
       }
     })
     if(!athlete) throw new BaseError('NOT FOUND',404, false,'there are no athlete users in the database')
     return [...athlete]
   }
+
   async executeReadAthlete(public_id: string) {
     const athlete = await this.prisma.client.userAthleteProfile.findFirst({
       include: {
@@ -144,8 +145,11 @@ class ProfileUseCase {
         sport_position: true
       },
     });
-
-    return athletes;
+    const count = await this.prisma.client.userAthleteProfile.aggregate({
+      _count: true,
+      where: Object.keys(whereClause).length > 0 ? whereClause : undefined
+    })
+    return [...athletes, count];
   }
   async executeUpdateProfile(id: string, dto: UpdateProfileDto) {
     const profile = await this.prisma.client.profiles.update({
