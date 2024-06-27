@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Put, Delete } from "../../decorators";
+import { Controller, Post, Get, Put, Delete, Patch } from "../../decorators";
 import { NextFunction, Request, Response } from "express";
 import { ICreateProfileDto, UpdateProfileDto } from "./dto";
 import { ProfileUseCase } from "./profile.service";
@@ -6,6 +6,7 @@ import { Authenticated} from "../../decorators/Security.decorator";
 import { supabase } from "../../providers/supabase/supabase";
 import { BaseError, HttpStatusCode } from "../../providers/errorProvider";
 import { AthleteStatusOptions, CountriesOptions, UserSexOptions } from "@prisma/client";
+
 
 @Controller('/profile', '1')
 export class ProfileController {
@@ -67,7 +68,7 @@ export class ProfileController {
   }
 
 
-  @Put("/update_profile/")
+  @Patch("/update_profile/")
   @Authenticated()
   async handleUpdateProfile(request: Request<{id: string}, {}, UpdateProfileDto>, response: Response) {
     const user = request.user
