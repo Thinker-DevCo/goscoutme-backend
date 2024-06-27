@@ -152,12 +152,17 @@ class ProfileUseCase {
     return [...athletes, count];
   }
   async executeUpdateProfile(id: string, dto: UpdateProfileDto) {
-    const profile = await this.prisma.client.profiles.update({
+    await this.prisma.client.profiles.update({
       where: { public_id: id },
       data: {
         ...dto
       }
     });
+    const profile = await this.prisma.client.profiles.findUnique({
+      where: {
+        public_id: id
+      }
+    })
     return profile;
   }
 
