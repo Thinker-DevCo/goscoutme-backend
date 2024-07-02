@@ -96,6 +96,8 @@ class ProfileUseCase {
     return [...athlete]
   }
 
+
+
   async executeReadAthlete(public_id: string) {
     const athlete = await this.prisma.client.userAthleteProfile.findFirst({
       include: {
