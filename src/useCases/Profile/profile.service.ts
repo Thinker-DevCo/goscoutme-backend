@@ -41,7 +41,7 @@ class ProfileUseCase {
         },
         nationality: dto.nationality,
         public_id:user_id,
-        sport_id: dto.sport_id,
+        sport_id: dto.sport_id ? dto.sport_id : null,
       }
     })
     if(dto.userType === 'ATHLETE'){
