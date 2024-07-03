@@ -161,6 +161,9 @@ class ProfileUseCase {
       }
     });
     const profile = await this.prisma.client.profiles.findUnique({
+      include: {
+        sport: true
+      },
       where: {
         public_id: id
       }
