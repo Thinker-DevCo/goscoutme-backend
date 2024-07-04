@@ -26,6 +26,7 @@ model Profiles {
   birth_date     DateTime
   account_status UserAccountStatusOptions @default(INATIVE)
   nationality    CountriesOptions         @default(NOT_SPECIEFIED)
+  country        CountriesOptions         @default(NOT_SPECIEFIED)
   sport_id       Int?
   phone          String?
   mobile         String?

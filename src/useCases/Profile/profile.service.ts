@@ -30,6 +30,7 @@ class ProfileUseCase {
         address: dto.address ? dto.address : null,
         mobile: dto.mobile ? dto.mobile : null,
         phone: dto.phone ? dto.phone : null,
+        country: dto.country,
         organization: {
           create: {
             org_document_url: dto.org_document_url || null,
