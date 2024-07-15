@@ -5,7 +5,7 @@
 
 */
 -- AlterTable
-ALTER TABLE "UserMedia" ADD COLUMN     "sport_attribute" INTEGER NOT NULL;
+ALTER TABLE "UserMedia" ADD COLUMN     "sport_attribute" INTEGER;
 
 -- AddForeignKey
 ALTER TABLE "UserMedia" ADD CONSTRAINT "UserMedia_sport_attribute_fkey" FOREIGN KEY ("sport_attribute") REFERENCES "SportsAttributes"("id") ON DELETE CASCADE ON UPDATE CASCADE;
