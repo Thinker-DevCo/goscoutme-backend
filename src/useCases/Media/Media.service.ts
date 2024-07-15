@@ -25,6 +25,7 @@ class MediaUseCase {
     if(!user) throw new NotFoundError('user was not found')
     const file = await this.prisma.client.userMedia.create({
       data: {
+        sport_attribute_id: dto.sport_attribute_id,
         athlete_id: user.id,
         media_url: `https://goscoutmee.s3.af-south-1.amazonaws.com/${user.id}/${dto.name.replace(
           / /g,
@@ -49,8 +50,11 @@ class MediaUseCase {
 
   async executeReadMedia(athlete_id: number) {
     const media = await this.prisma.client.userMedia.findMany({
+      include: {
+        sport_attribute: true
+      },
       where: {
-        athlete_id: athlete_id
+        athlete_id: athlete_id,
       }
     })
     return media

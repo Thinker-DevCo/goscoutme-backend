@@ -127,11 +127,12 @@ model Sports {
 }
 
 model SportsAttributes {
-  id       Int                    @id @default(autoincrement())
-  name     String
-  sport_id Int
-  sport    Sports                 @relation(fields: [sport_id], references: [id], onDelete: Cascade)
-  athlete  UserSportsAttributes[]
+  id         Int                    @id @default(autoincrement())
+  name       String
+  sport_id   Int
+  sport      Sports                 @relation(fields: [sport_id], references: [id], onDelete: Cascade)
+  athlete    UserSportsAttributes[]
+  user_media UserMedia[]
 }
 
 model UserOrganization {
@@ -146,12 +147,14 @@ model UserOrganization {
 }
 
 model UserMedia {
-  id         Int                @id @default(autoincrement())
-  athlete_id Int
-  athlete    UserAthleteProfile @relation(fields: [athlete_id], references: [id], onDelete: Cascade)
-  name       String
-  type       MediaOptions
-  media_url  String
+  id                 Int                @id @default(autoincrement())
+  athlete_id         Int
+  athlete            UserAthleteProfile @relation(fields: [athlete_id], references: [id], onDelete: Cascade)
+  name               String
+  type               MediaOptions
+  sport_attribute_id Int?
+  sport_attribute    SportsAttributes?  @relation(fields: [sport_attribute_id], references: [id], onDelete: Cascade)
+  media_url          String
 }
 
 model UserAppointments {
