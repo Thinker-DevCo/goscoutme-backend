@@ -104,8 +104,14 @@ class ProfileUseCase {
       include: {
         profile: {
           include: {
-            organization: true
+            organization: true,
+            sport: {
+              include: {
+                attibutes: true
+              }
+            }
           },
+  
         },
         sport_position: true,
         media: true,
