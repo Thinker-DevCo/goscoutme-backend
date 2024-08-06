@@ -9,8 +9,9 @@ import { AppointmentsRoutes } from "./useCases/Appointments/appointments.route";
 import { NotificationsController } from "./useCases/Notifications/notifications.controller";
 import { NotificationsRoutes } from "./useCases/Notifications/notifications.route";
 import { ScoutsnotesRoutes } from "./useCases/Scoutsnotes/scoutsnotes.route";
+import { CheckoutRoutes } from "./useCases/Checkout/checkout.route";
 
-@GlobalRoutes([AuthRoutes, ProfileRoutes, SportsRoutes, MediaRoutes, AppointmentsRoutes, NotificationsRoutes, ScoutsnotesRoutes])
+@GlobalRoutes([AuthRoutes, ProfileRoutes, SportsRoutes, MediaRoutes, AppointmentsRoutes, NotificationsRoutes, ScoutsnotesRoutes, CheckoutRoutes])
 export class AppGlobalRoutes {
   startModule(app: Express): void {}
 }

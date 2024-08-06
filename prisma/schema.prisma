@@ -181,6 +181,22 @@ model ScoutNotes {
   @@id([scout_id, athlete_id])
 }
 
+model Subscription {
+  id         Int      @id @default(autoincrement())
+  plan_id    Int
+  plan       Plan     @relation(fields: [plan_id], references: [id])
+  public_id  String
+  start_date DateTime @default(now())
+  end_date   DateTime
+}
+
+model Plan {
+  id            Int            @id @default(autoincrement())
+  name          String
+  price_id      String
+  subscriptions Subscription[]
+}
+
 enum UserSexOptions {
   NOT_SPECIEFIED
   MALE

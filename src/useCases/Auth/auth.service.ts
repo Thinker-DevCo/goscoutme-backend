@@ -3,6 +3,7 @@ import { supabase } from "../../providers/supabase/supabase";
 import { ICreateAuthDto, ISignIn } from "./dto/CreateAuth.dto";
 import { BaseError, HttpStatusCode } from "../../providers/errorProvider";
 import { PrismaService } from "../../providers/prisma/prismaClient";
+import { BadRequestError } from "routing-controllers";
 
 class AuthUseCase {
   private readonly prisma: PrismaService
@@ -76,6 +77,11 @@ class AuthUseCase {
       profile: profile,
       user: data.user
     }
+  }
+  async executeResetPassword(email: string, redirectTo: string){
+    const {data, error} = await supabase.auth.resetPasswordForEmail(email, {redirectTo: redirectTo})
+    if(error) throw new BadRequestError('Could not reset password')
+    return {message: 'email sent successfully'}
   }
 }
 

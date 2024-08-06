@@ -17,6 +17,13 @@ export class AuthController {
     }
   }
 
+  @Post("reset_password")
+  async handleResetPassword(request: Request<{}, {}, {email: string, redirectTo: string}>, response: Response, next: NextFunction){
+    const res = await new AuthUseCase().executeResetPassword(request.body.email, request.body.redirectTo)
+    return response.json(res)
+  }
+
+
   @Post("sign_in")
   async handleSignIn(request: Request<{}, {}, ISignIn>, response: Response, next: NextFunction) {
     try{

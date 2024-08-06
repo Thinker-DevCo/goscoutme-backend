@@ -9,7 +9,8 @@ import { errorHandler } from "./middlewares/errorHandler";
 import { createServer } from 'http';
 import { Server, Socket } from "socket.io";
 import { ServerSocket } from "./providers/webSocket/webSocket";
-
+import { webhookrouter } from "./webhook";
+import * as ngrok from "ngrok";
 
 dotenv.config();
 const app = express();
@@ -18,7 +19,7 @@ const app = express();
 const port = process.env.PORT || 3000;
 const appGlobalRoutesInstance = new AppGlobalRoutes();
 
-
+app.use(webhookrouter)
 app.use(express.json());
 app.use(cors());
 appGlobalRoutesInstance.startModule(app);
@@ -31,6 +32,7 @@ app.use(errorHandler);
 const server = createServer(app);
 const socket = new ServerSocket(server)
 app.listen(port);
+
 
 export { app, server, socket};
 
