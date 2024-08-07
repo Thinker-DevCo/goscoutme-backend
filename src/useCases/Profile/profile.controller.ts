@@ -76,4 +76,11 @@ export class ProfileController {
     return response.json(data);
   }
 
+  @Get("/get_subscription")
+  @Authenticated()
+  async handleGetSubscription(request: Request<{},{}>, response: Response, next: NextFunction){
+    const user = request.user
+    const data = await new ProfileUseCase().executeGetSubscription(user.data.user.id)
+    return response.json(data);
+  }
 }

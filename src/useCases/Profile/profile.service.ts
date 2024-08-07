@@ -97,7 +97,21 @@ class ProfileUseCase {
     return [...athlete]
   }
 
-
+  async executeGetSubscription(user_id: string) {
+    const subscription = await this.prisma.client.subscription.findFirst({
+      include: {
+        plan: true
+      },
+      where: {
+        public_id: user_id
+      },
+      orderBy: {
+        end_date: 'desc'
+      }
+    })
+    if(!subscription) return null
+    return subscription
+  }
 
   async executeReadAthlete(public_id: string) {
     const athlete = await this.prisma.client.userAthleteProfile.findFirst({
