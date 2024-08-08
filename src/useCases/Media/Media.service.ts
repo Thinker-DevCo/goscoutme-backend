@@ -42,8 +42,8 @@ class MediaUseCase {
     const signedUrl = await getSignedUrl(this.s3.client,new PutObjectCommand({
       Bucket: 'goscoutmee',
       Key: `${user_id}/${file_name}`,
-      ACL: 'public-read-write',
-      ContentType: file_type
+      ACL: 'public-read',
+      ContentType: file_type.toLowerCase()
     }), {expiresIn: 600})
     return signedUrl
   }
