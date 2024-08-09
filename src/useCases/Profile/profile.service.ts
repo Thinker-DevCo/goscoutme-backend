@@ -3,6 +3,7 @@ import { BaseError, HttpStatusCode } from "../../providers/errorProvider";
 import { PrismaService } from "../../providers/prisma/prismaClient";
 import { ICreateProfileDto, UpdateProfileDto } from "./dto";
 import { IFilterAthletesParams } from "./types";
+import { contains } from "class-validator";
 
 
 class ProfileUseCase {
@@ -145,6 +146,7 @@ class ProfileUseCase {
       profile: {}
     };
     const positionQuery = this.stringToNumberArray(params.positions)
+
     const sexQuery = this.stringToStringArray(params.sex)
     const statusQuery = this.stringToStringArray(params.status)
     const countryQuery = this.stringToStringArray(params.country)
@@ -152,6 +154,7 @@ class ProfileUseCase {
     if(positionQuery && positionQuery.length > 0) whereClause.sport_position_id = whereClause.sport_position_id = { in: positionQuery};
     if (sexQuery && sexQuery.length > 0) whereClause.profile.sex = whereClause.profile.sex = {in: sexQuery};
     if (params.ageMin ) whereClause.age = { gte: params.ageMin };
+    if(params.sport) whereClause.sport_id = whereClause.sport_id = params.sport
     if (params.ageMax) whereClause.age = { lte: params.ageMax };
     if (statusQuery && statusQuery.length > 0) whereClause.status = whereClause.status = {in: statusQuery};
     if (countryQuery && countryQuery.length > 0) whereClause.profile.nationality = whereClause.profile.nationality = {in: countryQuery};

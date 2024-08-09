@@ -8,4 +8,5 @@ export interface IFilterAthletesParams {
   page: number;
   items?: number;
   id?: string
+  sport?: number
 }
