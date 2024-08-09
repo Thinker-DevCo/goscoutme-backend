@@ -154,7 +154,7 @@ class ProfileUseCase {
     if(positionQuery && positionQuery.length > 0) whereClause.sport_position_id = whereClause.sport_position_id = { in: positionQuery};
     if (sexQuery && sexQuery.length > 0) whereClause.profile.sex = whereClause.profile.sex = {in: sexQuery};
     if (params.ageMin ) whereClause.age = { gte: params.ageMin };
-    if(params.sport) whereClause.sport_id = whereClause.sport_id = params.sport
+    if(params.sport) whereClause.sport_position.sport_id = whereClause.sport_position.sport_id = params.sport
     if (params.ageMax) whereClause.age = { lte: params.ageMax };
     if (statusQuery && statusQuery.length > 0) whereClause.status = whereClause.status = {in: statusQuery};
     if (countryQuery && countryQuery.length > 0) whereClause.profile.nationality = whereClause.profile.nationality = {in: countryQuery};
@@ -168,7 +168,7 @@ class ProfileUseCase {
             organization: true
           }
         },
-        sport_position: true
+        sport_position: true,
       },
     });
     const count = await this.prisma.client.userAthleteProfile.aggregate({
