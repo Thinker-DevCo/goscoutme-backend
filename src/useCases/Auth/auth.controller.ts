@@ -22,6 +22,7 @@ export class AuthController {
     const res = await new AuthUseCase().executeResetPassword(request.body.email, request.body.redirectTo)
     return response.json(res)
   }
+  
 
 
   @Post("sign_in")

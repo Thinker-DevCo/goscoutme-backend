@@ -18,6 +18,7 @@ class AuthUseCase {
           lastName: dto.last_name
         }
       },
+      
       email: dto.email,
       password: dto.password
     })

@@ -16,6 +16,7 @@ class MediaUseCase {
   }
   async executeCreateMedia(dto: CreateMedia, user_id: string) {
     const user = await this.prisma.client.userAthleteProfile.findFirst({
+      include: {profile: true},
       where: {
         profile: {
           public_id: user_id
@@ -27,7 +28,7 @@ class MediaUseCase {
       data: {
         sport_attribute_id: dto.sport_attribute_id,
         athlete_id: user.id,
-        media_url: `https://goscoutmee.s3.af-south-1.amazonaws.com/${user.id}/${dto.name.replace(
+        media_url: `https://goscoutmee.s3.af-south-1.amazonaws.com/${user.profile.public_id}/${dto.name.replace(
           / /g,
           '+',
         )}`,
@@ -39,11 +40,11 @@ class MediaUseCase {
   }
 
   async executeCreatePresignedUser(user_id: string, file_name: string, file_type: string){
-    const signedUrl = await getSignedUrl(this.s3.client,new PutObjectCommand({
+    const signedUrl = await getSignedUrl(this.s3.client, new PutObjectCommand({
       Bucket: 'goscoutmee',
       Key: `${user_id}/${file_name}`,
       ACL: 'public-read',
-      ContentType: file_type.toLowerCase()
+      ContentType: "video/mp4"
     }), {expiresIn: 600})
     return signedUrl
   }
