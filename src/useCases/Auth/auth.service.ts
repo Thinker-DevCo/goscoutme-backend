@@ -12,18 +12,17 @@ class AuthUseCase {
   }
   async executeSignUp(dto:ICreateAuthDto) {
     const user: AuthResponse = await supabase.auth.signUp({
+
       options: {
         data: {
-          firstName: dto.email,
-          lastName: dto.last_name
+          userType: dto.user_type,
         }
       },
-      
       email: dto.email,
       password: dto.password
     })
     if(user.error) throw new BaseError('FORBIDDEN', HttpStatusCode.FORBIDDEN, true, 'User already exists')
-    delete user.data.user.user_metadata,
+
     delete user.data.user.identities
     return {
       session: user.data.session,
@@ -48,7 +47,6 @@ class AuthUseCase {
         public_id: user.data.user.id
       }
     })
-    delete user.data.user.user_metadata,
     delete user.data.user.identities
     return {
       profile: user_profile,
@@ -81,7 +79,7 @@ class AuthUseCase {
   }
   async executeResetPassword(email: string, redirectTo: string){
     const {data, error} = await supabase.auth.resetPasswordForEmail(email, {redirectTo: redirectTo})
-    if(error) throw new BadRequestError('Could not reset password')
+    if(error) throw new BadRequestError('Could not reset password'+error)
     return {message: 'email sent successfully'}
   }
 }

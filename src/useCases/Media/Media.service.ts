@@ -38,6 +38,27 @@ class MediaUseCase {
     })
     return file
   }
+  async executeUploadMedia(dto: CreateMedia, user_id: string) {
+    const user = await this.prisma.client.userAthleteProfile.findFirst({
+      include: {profile: true},
+      where: {
+        profile: {
+          public_id: user_id
+        }
+      }
+    })
+    if(!user) throw new NotFoundError('user was not found')
+    const file = await this.prisma.client.userMedia.create({
+      data: {
+        sport_attribute_id: dto.sport_attribute_id,
+        athlete_id: user.id,
+        media_url: dto.media_url,
+        type: dto.type,
+        name: dto.name
+      }
+    })
+    return file
+  }
 
   async executeCreatePresignedUser(user_id: string, file_name: string, file_type: string){
     const signedUrl = await getSignedUrl(this.s3.client, new PutObjectCommand({

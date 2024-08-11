@@ -17,6 +17,17 @@ export class MediaController {
       next(err)
     }
   }
+  @Authenticated()
+  @Post("/store_media")
+  async handleUploadMedia(request: Request<{}, {}, CreateMediaDto>, response: Response, next: NextFunction){
+    try{
+      const user_id = request.user.data.user.id
+      const media = await new MediaUseCase().executeUploadMedia(request.body, user_id)
+      return response.status(201).json(media);
+    }catch(err){
+      next(err)
+    }
+  }
 
   @Authenticated()
   @Post("/create_presigned_url")

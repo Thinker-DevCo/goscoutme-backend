@@ -13,6 +13,8 @@ export class ICreateAuthDto {
   email: string;
 
   @IsString()
+  user_type: string;
+  @IsString()
   password: string;
 
   @IsString()
